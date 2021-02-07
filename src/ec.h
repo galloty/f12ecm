@@ -29,7 +29,7 @@ public:
 		const Res & x() const { return _x; }
 		const Res & z() const { return _z; }
 
-		void set(const mpz_class & x, const mpz_class & z) { _x.set_z(x); _z.set_z(z); }
+		void set(const size_t i, const mpz_class & x, const mpz_class & z) { _x.set_z(i, x); _z.set_z(i, z); }
 		void set(const Point & P) { _x.set(P._x); _z.set(P._z); }
 		void swap(Point & P) { _x.swap(P._x); _z.swap(P._z); }
 		void addsub() { Res::addsub(_x, _z); }
@@ -81,10 +81,10 @@ private:
 public:
 	EC(const size_t thread_index) : _C(thread_index), _P1(thread_index), _P2(thread_index), _T(thread_index), _t(thread_index) {}
 
-	void set(const mpz_class & A, const mpz_class & n)
+	void set(const size_t i, const mpz_class & A, const mpz_class & n)
 	{
 		mpz_class t; mpz_invert(t.get_mpz_t(), mpz_class(4).get_mpz_t(), n.get_mpz_t());
-		_C.set_z(((A + 2) * t) % n);
+		_C.set_z(i, ((A + 2) * t) % n);
 	}
 
 	void dbl(Point & Po, const Point & P) { Po.set(P); dbl(Po); }

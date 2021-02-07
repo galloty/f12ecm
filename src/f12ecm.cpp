@@ -9,202 +9,180 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <cstdlib>
 #include <random>
 #include <iostream>
-#include <fstream>
 #include <sstream>
-#include <thread>
-#include <mutex>
-#include <atomic>
-#include <chrono>
 
-#include "pool.h"
-#include "prm.h"
-#include "ec.h"
+#if defined (_WIN32)
+#include <Windows.h>
+#else
+#include <signal.h>
+#endif
 
-#include <gmpxx.h>
-
-inline mpz_class mpz(const uint64_t n)
-{
-	mpz_class z;
-	mp_limb_t * const p_limb = mpz_limbs_write(z.get_mpz_t(), 1);
-	p_limb[0] = n;
-	mpz_limbs_finish(z.get_mpz_t(), 1);
-	return z;
-}
-
-static mpz_class gcd(const Res & x, const mpz_class & n)
-{
-	mpz_class t = x.get_z(); if (t < 0) t += n;
-	return ::gcd(t, n);
-}
-
-class ECM
-{
-private:
-	const uint64_t _B1, _B2, _sigma_0;
-	const size_t _thread_count;
-	std::atomic<size_t> _running_threads;
-	std::mutex _output_mutex;
-
-	static const mpz_class F_12;
-
-public:
-	static const size_t D = 128;
-
-private:
-	static mpz_class cub_mod(const mpz_class & x, const mpz_class & n) { mpz_class t = (x * x * x) % n; if (t < 0) t += n; return t; }
-
-	// A such that the group order is divisible by 12 (H. Suyama)
-	static mpz_class A_12(const uint64_t sigma, const mpz_class & n, EC::Point & P0)
-	{
-		const mpz_class s = mpz(sigma);
-		const mpz_class u = s * s - 5, v = 4 * s;
-		const mpz_class x = cub_mod(u, n), z = cub_mod(v, n);
-		P0.set(x, z);
-		mpz_class t = 4 * x * v;
-		mpz_invert(t.get_mpz_t(), t.get_mpz_t(), n.get_mpz_t());
-		t = (t * cub_mod(v - u, n) * (3 * u + v)) % n;
-		t -= 2; if (t < 0) t += n;
-		return t;
-	}
-
-	void output(const uint64_t sigma, const int level, const uint64_t B, const mpz_class & g)
-	{
-		static const mpz_class p[6] = {
-			mpz_class("114689"), mpz_class("26017793"), mpz_class("63766529"), mpz_class("190274191361"),
-			mpz_class("1256132134125569"), mpz_class("568630647535356955169033410940867804839360742060818433") };
-
-		mpz_class r = g;
-
-		std::stringstream ss;
-		ss << "sigma = " << sigma << ", B" << level << " = " << B << ":";
-		for (size_t i = 0; i < sizeof(p)/sizeof(mpz_class); ++i)
-		{
-			if (mpz_divisible_p(r.get_mpz_t(), p[i].get_mpz_t()))
-			{
-				ss << " " << p[i].get_str();
-				r /= p[i];
-			}
-		}
-		if (r != 1) ss << " " << r.get_str() << " !!!";
-
-		std::lock_guard<std::mutex> guard(_output_mutex);
-		std::cout << ss.str() << std::endl;
-		std::ofstream logFile("f12.log", std::ios::app);
-		if (logFile.is_open())
-		{
-			logFile << ss.str() << std::endl;
-			logFile.flush(); logFile.close();
-		}
-	}
-
-	void test(const size_t thread_index)
-	{
-		const uint64_t B1 = _B1, B2 = _B2;
-
-		EC ec(thread_index);
-		EC::Point P(thread_index);
-
-		EC::Point S[D]; for (size_t i = 0; i < D; ++i) S[i].init(thread_index);
-		Res beta[D]; for (size_t i = 0; i < D; ++i) beta[i].init(thread_index);
-
-		EC::Point T(thread_index), R(thread_index);;
-		Res g(thread_index), alpha(thread_index), t1(thread_index), t2(thread_index);
-
-		PseudoPrmGen prmGen;
-
-		for (uint64_t sigma = _sigma_0 + thread_index; sigma < _sigma_0 + 3 * _thread_count; sigma += _thread_count)
-		{
-			const mpz_class A = A_12(sigma, F_12, P);
-			ec.set(A, F_12);
-
-			uint64_t p = prmGen.first();
-			for (; p <= B1; p = prmGen.next())
-			{
-				uint64_t m = p; while (m * p <= B1) m *= p;
-				ec.mul(P, P, m);
-			}
-
-			const mpz_class g1 = gcd(P.z(), F_12);
-			if (g1 != 1) output(sigma, 1, B1, g1);
-
-			ec.dbl(S[0], P); ec.dbl(S[1], S[0]);
-			for (size_t d = 2; d < D; ++d) ec.sum(S[d], S[d - 1], S[0], S[d - 2]);
-
-			for (size_t d = 0; d < D; ++d) beta[d].mul(S[d].x(), S[d].z());
-
-			const uint64_t r_min = p - 2;
-			ec.mul(T, P, r_min - 2 * D), ec.mul(R, P, r_min);
-
-			g.set_z(mpz_class(1));
-
-			for (uint64_t r = r_min; r < B2; r += 2 * D)
-			{
-				alpha.mul(R.x(), R.z());
-
-				for (; p <= r + 2 * D; p = prmGen.next())
-				{
-					const size_t delta = (p - r) / 2 - 1;
-					t1.sub(R.x(), S[delta].x()); t2.add(R.z(), S[delta].z());
-					t1.mul(t2); t1.sub(t1, alpha); t1.add(t1, beta[delta]);
-					g.mul(t1);
-				}
-
-				ec.sum(T, R, S[D - 1], T);
-				T.swap(R);
-			}
-
-			const mpz_class g2 = gcd(g, F_12);
-			if (g2 != g1) output(sigma, 2, B2, g2 / g1);
-		};
-
-		mainPool.free(thread_index);
-
-		_running_threads--;
-	}
-
-public:
-	ECM(const uint64_t B1, const uint64_t B2, const uint64_t sigma_0, const size_t thread_count) : _B1(B1), _B2(B2), _sigma_0(sigma_0), _thread_count(thread_count)
-	{
-		_running_threads = 0;
-
-		for (size_t i = 0; i < thread_count; ++i)
-		{
-			_running_threads++;
-			std::thread t_test([=] { test(i); });
-			t_test.detach();
-		}
-
-		while (_running_threads != 0)
-		{
-			std::this_thread::sleep_for(std::chrono::seconds(1));
-		}
-	}
-};
+#include "ecm.h"
 
 const mpz_class ECM::F_12 = (mpz_class(1) << (1 << 12)) + 1;
 
+class application
+{
+private:
+	struct deleter { void operator()(const application * const p) { delete p; } };
+
+private:
+	static void quit(int)
+	{
+		ECM::getInstance().quit();
+	}
+
+private:
+#if defined (_WIN32)
+	static BOOL WINAPI HandlerRoutine(DWORD)
+	{
+		quit(1);
+		return TRUE;
+	}
+#endif
+
+public:
+	application()
+	{
+#if defined (_WIN32)	
+		SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+#else
+		signal(SIGTERM, quit);
+		signal(SIGINT, quit);
+#endif
+	}
+
+	virtual ~application() {}
+
+	static application & getInstance()
+	{
+		static std::unique_ptr<application, deleter> pInstance(new application());
+		return *pInstance;
+	}
+
+private:
+	static std::string header()
+	{
+		const char * const sys =
+#if defined(_WIN64)
+			"win64";
+#elif defined(_WIN32)
+			"win32";
+#elif defined(__linux__)
+#ifdef __x86_64
+			"linux64";
+#else
+			"linux32";
+#endif
+#elif defined(__APPLE__)
+			"macOS";
+#else
+			"unknown";
+#endif
+
+		const char * const cpu =
+#if defined (__AVX512F__)
+			"AVX-512";
+#elif defined (__AVX__)
+			"AVX";
+#else
+			"SSE4";
+#endif
+
+		std::ostringstream ssc;
+#if defined(__GNUC__)
+		ssc << "gcc-" << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__;
+#elif defined(__clang__)
+		ssc << "clang-" << __clang_major__ << "." << __clang_minor__ << "." << __clang_patchlevel__;
+#endif
+
+		std::ostringstream ss;
+		ss << "f12ecm 0.1.0 " << sys << "/" << cpu << "/" << ssc.str() << std::endl;
+		ss << "Copyright (c) 2021, Yves Gallot" << std::endl;
+		ss << "f12ecm is free source code, under the MIT license." << std::endl;
+		ss << std::endl;
+		return ss.str();
+	}
+
+private:
+	static std::string usage()
+	{
+		std::ostringstream ss;
+		ss << " Usage: f12ecm [options]  options may be specified in any order" << std::endl;
+		ss << "   -t <n>      number of threads (default: 3)" << std::endl;
+		ss << "   -b <n>      bound of stage 1 (default: B1 = 10000)" << std::endl;
+		ss << "   -B <n>      bound of stage 2 (default: B2 = 100*B1)" << std::endl;
+		ss << "   -s <n>      sigma in Montgomery-Suyama-12 EC (default: random)" << std::endl;
+		ss << std::endl;
+		return ss.str();
+	}
+
+public:
+	void run(int argc, char * argv[])
+	{
+		std::vector<std::string> args;
+		for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
+
+		std::cout << header();
+
+		if (args.empty()) std::cout << usage();
+
+		std::random_device rd; std::uniform_int_distribution<uint64_t> dist(6, uint64_t(-1));
+
+		size_t thread_count = 3;
+		uint64_t B1 = 10000, B2 = 0;
+		uint64_t sigma_0 = dist(rd);
+
+		// parse args
+		for (size_t i = 0, size = args.size(); i < size; ++i)
+		{
+			const std::string & arg = args[i];
+
+			if (arg.substr(0, 2) == "-t")
+			{
+				const std::string t = ((arg == "-t") && (i + 1 < size)) ? args[++i] : arg.substr(2);
+				thread_count = std::atoi(t.c_str());
+			}
+			else if (arg.substr(0, 2) == "-b")
+			{
+				const std::string b = ((arg == "-b") && (i + 1 < size)) ? args[++i] : arg.substr(2);
+				B1 = std::max(std::atoll(b.c_str()), 1000ll);
+			}
+			else if (arg.substr(0, 2) == "-B")
+			{
+				const std::string B = ((arg == "-B") && (i + 1 < size)) ? args[++i] : arg.substr(2);
+				B2 = std::max(std::atoll(B.c_str()), 1000ll);
+			}
+			else if (arg.substr(0, 2) == "-s")
+			{
+				const std::string s = ((arg == "-s") && (i + 1 < size)) ? args[++i] : arg.substr(2);
+				sigma_0 = std::max(std::atoll(s.c_str()), 6ll);
+			}
+		}
+
+		if (B2 == 0) B2 = 100 * B1;
+		if (B2 < B1) B2 = B1;
+
+		std::cout << "Testing " << VCOMPLEX_SIZE * thread_count << " curves..." << std::endl;
+
+		ECM & ecm = ECM::getInstance();
+		ecm.run(B1, B2, sigma_0, thread_count);
+	}
+};
+
 int main(int argc, char * argv[])
 {
-	std::cerr << "f12ecm: factorize the 12th Fermat number with the Elliptic Curve Method" << std::endl;
-	std::cerr << " Copyright (c) 2021, Yves Gallot" << std::endl;
-	std::cerr << " f12ecm is free source code, under the MIT license." << std::endl << std::endl;
-	std::cerr << " Usage: f12ecm <n_threads> <B1> <B2> <sigma_0>" << std::endl;
-	std::cerr << "   n_threads: the number of threads (default 3)" << std::endl;
-	std::cerr << "   B1: the bound of stage 1 (default 10000)" << std::endl;
-	std::cerr << "   B2: the bound of stage 2 (default 100*B1)" << std::endl;
-	std::cerr << "   sigma_0: the number of threads (default random)" << std::endl << std::endl;
-
-	std::random_device rd;
-	std::uniform_int_distribution<uint64_t> dist(6, uint64_t(-1));
-
-	const size_t n_threads = (argc > 1) ? std::atoi(argv[1]) : 3;
-	const uint64_t B1 = (argc > 2) ? std::max(std::atoll(argv[2]), 100ll) : 10000;
-	const uint64_t B2 = (argc > 3) ? std::max(std::atoll(argv[3]), 10000ll) : 100 * B1;
-	const uint64_t sigma_0 = (argc > 4) ? std::max(std::atoll(argv[4]), 6ll) : dist(rd);
-
-	mainPool.init(ECM::D, n_threads);
-
-	ECM(B1, B2, sigma_0, n_threads);
+	try
+	{
+		application & app = application::getInstance();
+		app.run(argc, argv);
+	}
+	catch (const std::runtime_error & e)
+	{
+		std::ostringstream ss; ss << std::endl << "error: " << e.what() << "." << std::endl;
+		std::cerr << ss.str();
+		return EXIT_FAILURE;
+	}
 
 	return EXIT_SUCCESS;
 }

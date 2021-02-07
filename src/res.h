@@ -16,7 +16,7 @@ class Res : public Transform
 {
 private:
 	static const size_t _n = 256 / 2;	// F_12 = 65536^256 + 1
-	Complex * _z;
+	VComplex * _z;
 
 public:
 	Res() : _z(nullptr) {}	// init(thread_index) must be called
@@ -26,28 +26,28 @@ public:
 
 	void init(const size_t thread_index)
 	{
-		_z = static_cast<Complex *>(mainPool.alloc(thread_index, _n * sizeof(Complex)));
+		_z = static_cast<VComplex *>(mainPool.alloc(thread_index, _n * sizeof(VComplex)));
 	}
 
-	mpz_class get_z() const
+	mpz_class get_z(const size_t i) const
 	{
-		const Complex * const z = _z;
+		const VComplex * const z = _z;
 
 		mpz_class r = 0;
 		for (size_t k = 0; k < _n; ++k)
 		{
-			const int h = int(z[_n - 1 - k].imag());
+			const int h = int(z[_n - 1 - k].imag(i));
 			r = (r << 16) + h;
 		}
 		for (size_t k = 0; k < _n; ++k)
 		{
-			const int l = int(z[_n - 1 - k].real());
+			const int l = int(z[_n - 1 - k].real(i));
 			r = (r << 16) + l;
 		}
 		return r;
 	}
 
-	void set_z(const mpz_class & r)
+	void set_z(const size_t i, const mpz_class & r)
 	{
 		const size_t r_size = mpz_size(r.get_mpz_t());
 		// if ((r < 0) ||(r_size * sizeof(uint64_t) > 2 * _n * sizeof(uint16_t)))
@@ -58,24 +58,25 @@ public:
 
 		uint16_t s[2 * _n];
 		const mp_limb_t * r_ptr = mpz_limbs_read(r.get_mpz_t());
-		for (size_t i = 0; i < r_size; ++i)
+		for (size_t k = 0; k < r_size; ++k)
 		{
-			const uint64_t r_i = r_ptr[i];
-			for (size_t j = 0; j < 4; ++j) s[4 * i + j] = uint16_t(r_i >> (16 * j));
+			const uint64_t r_k = r_ptr[k];
+			for (size_t j = 0; j < 4; ++j) s[4 * k + j] = uint16_t(r_k >> (16 * j));
 		}
-		for (size_t i = 4 * r_size; i < 256; ++i) s[i] = 0;
+		for (size_t k = 4 * r_size; k < 256; ++k) s[k] = 0;
 
-		Complex * const z = _z;
+		VComplex * const z = _z;
 		for (size_t k = 0; k < _n; ++k)
 		{
-			z[k] = Complex(double(s[k]), double(s[k + _n]));
+			z[k].real(i) = double(s[k]);
+			z[k].imag(i) = double(s[k + _n]);
 		}
 	}
 
 	void set(const Res & x)
 	{
-		const Complex * const zr = x._z;
-		Complex * const z = _z;
+		const VComplex * const zr = x._z;
+		VComplex * const z = _z;
 		for (size_t k = 0; k < _n; ++k) z[k] = zr[k];
 	}
 
@@ -86,25 +87,25 @@ public:
 
 	void add(const Res & x, const Res & y)
 	{
-		const Complex * const zx = x._z;
-		const Complex * const zy = y._z;
-		Complex * const z = _z;
+		const VComplex * const zx = x._z;
+		const VComplex * const zy = y._z;
+		VComplex * const z = _z;
 		for (size_t k = 0; k < _n; ++k) z[k] = zx[k] + zy[k];
 	}
 
 	void sub(const Res & x, const Res & y)
 	{
-		const Complex * const zx = x._z;
-		const Complex * const zy = y._z;
-		Complex * const z = _z;
+		const VComplex * const zx = x._z;
+		const VComplex * const zy = y._z;
+		VComplex * const z = _z;
 		for (size_t k = 0; k < _n; ++k) z[k] = zx[k] - zy[k];
 	}
 
 	static void addsub(Res & x, Res & y)
 	{
-		Complex * const zx = x._z;
-		Complex * const zy = y._z;
-		for (size_t k = 0; k < _n; ++k) { const Complex u = zx[k], v = zy[k]; zx[k] = u + v; zy[k] = u - v; }
+		VComplex * const zx = x._z;
+		VComplex * const zy = y._z;
+		for (size_t k = 0; k < _n; ++k) { const VComplex u = zx[k], v = zy[k]; zx[k] = u + v; zy[k] = u - v; }
 	}
 
 	void sqr()
@@ -114,7 +115,7 @@ public:
 		forward4_0(_n / 4, _z);
 		for (size_t j = 0; j < 4; ++j)
 		{
-			Complex * const z = &_z[j * _n / 4];
+			VComplex * const z = &_z[j * _n / 4];
 
 			const Complex * const w = &w123[3 * (4 + j)];
 			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
@@ -132,7 +133,7 @@ public:
 
 	void mul(const Res & x)
 	{
-		Complex r_z[_n];
+		VComplex r_z[_n];
 		for (size_t k = 0; k < _n; ++k) r_z[k] = x._z[k];
 
 		const Complex * const w123 = mainPool.w123;
@@ -141,8 +142,8 @@ public:
 		forward4_0(_n / 4, r_z);
 		for (size_t j = 0; j < 4; ++j)
 		{
-			Complex * const z = &_z[j * _n / 4];
-			Complex * const zr = &r_z[j * _n / 4];
+			VComplex * const z = &_z[j * _n / 4];
+			VComplex * const zr = &r_z[j * _n / 4];
 
 			const Complex * const w = &w123[3 * (4 + j)];
 			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
