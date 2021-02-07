@@ -122,7 +122,7 @@ struct Transform
 		}
 
 		bool is_zero = f.is_zero();
-		// const double err = e.max();
+		// const double err = e.max();	// SSE4 only
 		// if (err > max_err) { max_err = err; std::cout << err << std::endl; }
 
 		while (!is_zero)

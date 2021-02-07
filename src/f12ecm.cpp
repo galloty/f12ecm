@@ -110,7 +110,7 @@ private:
 		std::ostringstream ss;
 		ss << " Usage: f12ecm [options]  options may be specified in any order" << std::endl;
 		ss << "   -t <n>      number of threads (default: 3)" << std::endl;
-		ss << "   -b <n>      bound of stage 1 (default: B1 = 10000)" << std::endl;
+		ss << "   -b <n>      bound of stage 1 (default: B1 = 100000)" << std::endl;
 		ss << "   -B <n>      bound of stage 2 (default: B2 = 100*B1)" << std::endl;
 		ss << "   -s <n>      sigma in Montgomery-Suyama-12 EC (default: random)" << std::endl;
 		ss << std::endl;
@@ -130,8 +130,8 @@ public:
 		std::random_device rd; std::uniform_int_distribution<uint64_t> dist(6, uint64_t(-1));
 
 		size_t thread_count = 3;
-		uint64_t B1 = 10000, B2 = 0;
-		uint64_t sigma_0 = dist(rd);
+		uint64_t B1 = 100000, B2 = 0;
+		uint64_t sigma_0 = 6;	//dist(rd);
 
 		// parse args
 		for (size_t i = 0, size = args.size(); i < size; ++i)
@@ -162,8 +162,6 @@ public:
 
 		if (B2 == 0) B2 = 100 * B1;
 		if (B2 < B1) B2 = B1;
-
-		std::cout << "Testing " << VCOMPLEX_SIZE * thread_count << " curves..." << std::endl;
 
 		ECM & ecm = ECM::getInstance();
 		ecm.run(B1, B2, sigma_0, thread_count);

@@ -129,9 +129,9 @@ private:
 
 		PseudoPrmGen prmGen;
 
-		for (uint64_t sigma = _sigma_0 + 2 * thread_index; sigma < _sigma_0 + 2 * _thread_count; sigma += 2 * _thread_count)
+		for (uint64_t sigma = _sigma_0 + VCOMPLEX_SIZE * thread_index; sigma < _sigma_0 + VCOMPLEX_SIZE * _thread_count; sigma += VCOMPLEX_SIZE * _thread_count)
 		{
-			for (size_t i = 0; i < 2; ++i)
+			for (size_t i = 0; i < VCOMPLEX_SIZE; ++i)
 			{
 				const mpz_class A = A_12(i, sigma + i, F_12, P);
 				ec.set(i, A, F_12);
@@ -145,7 +145,7 @@ private:
 				if (_quit) break;
 			}
 
-			for (size_t i = 0; i < 2; ++i)
+			for (size_t i = 0; i < VCOMPLEX_SIZE; ++i)
 			{
 				const mpz_class g1 = gcd(i, P.z(), F_12);
 				if (g1 != 1) output(sigma + i, 1, B1, g1);
@@ -160,7 +160,7 @@ private:
 			const uint64_t r_min = p - 2;
 			ec.mul(T, P, r_min - 2 * D), ec.mul(R, P, r_min);
 
-			for (size_t i = 0; i < 2; ++i) g.set_z(i, mpz_class(1));
+			for (size_t i = 0; i < VCOMPLEX_SIZE; ++i) g.set_z(i, mpz_class(1));	// TODO set_1
 
 			for (uint64_t r = r_min; r < B2; r += 2 * D)
 			{
@@ -179,7 +179,7 @@ private:
 				if (_quit) break;
 			}
 
-			for (size_t i = 0; i < 2; ++i)
+			for (size_t i = 0; i < VCOMPLEX_SIZE; ++i)
 			{
 				const mpz_class g2 = gcd(i, g, F_12);
 				output(sigma + i, 2, B2, g2);
@@ -196,6 +196,8 @@ public:
 	{
 		_B1 = B1; _B2 = B2; _sigma_0 = sigma_0;
 		_thread_count = thread_count; _running_threads = 0;
+
+		std::cout << "Testing " << VCOMPLEX_SIZE * thread_count << " curves..." << std::endl;
 
 		mainPool.init(ECM::D, VCOMPLEX_SIZE * sizeof(Complex), thread_count);
 
