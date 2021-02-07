@@ -10,13 +10,14 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include "res.h"
 
 // Montgomery curve: B y^2 = x^3 + A x^2 + x
+template<typename VComplex>
 class EC
 {
 public:
 	class Point
 	{
 	private:
-		Res _x, _z;
+		Res<VComplex> _x, _z;
 
 	public:
 		Point() {}	// init(thread_index) must be called
@@ -26,24 +27,24 @@ public:
 
 		void init(const size_t thread_index) { _x.init(thread_index); _z.init(thread_index); }
 		
-		const Res & x() const { return _x; }
-		const Res & z() const { return _z; }
+		const Res<VComplex> & x() const { return _x; }
+		const Res<VComplex> & z() const { return _z; }
 
 		void set(const size_t i, const mpz_class & x, const mpz_class & z) { _x.set_z(i, x); _z.set_z(i, z); }
 		void set(const Point & P) { _x.set(P._x); _z.set(P._z); }
 		void swap(Point & P) { _x.swap(P._x); _z.swap(P._z); }
-		void addsub() { Res::addsub(_x, _z); }
+		void addsub() { Res<VComplex>::addsub(_x, _z); }
 		void addsub(const Point & P) { _x.add(P._x, P._z); _z.sub(P._x, P._z); }
 		void sqr() { _x.sqr(); _z.sqr(); }
 		void vmul(const Point & P) { _x.mul(_z); _z.mul(P._x, P._z); }
 		void cross(const Point & P) { _x.mul(P._z); _z.mul(P._x); }
-		void mulc_xz(const Point & P, const Res & C, Res & t) { _x.sub(P._x, P._z); t.mul(C, _x); _z.add(P._z, t); }
+		void mulc_xz(const Point & P, const Res<VComplex> & C, Res<VComplex> & t) { _x.sub(P._x, P._z); t.mul(C, _x); _z.add(P._z, t); }
 	};
 
 private:
-	Res _C;	// C = (A + 2) / 4
+	Res<VComplex> _C;	// C = (A + 2) / 4
 	Point _P1, _P2, _T;	// buffers
-	Res _t;	// buffer
+	Res<VComplex> _t;	// buffer
 
 	// P + P
 	void dbl(Point & P)

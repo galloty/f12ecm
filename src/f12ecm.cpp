@@ -10,6 +10,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <random>
 #include <iostream>
 #include <sstream>
+#include <thread>
 
 #if defined (_WIN32)
 #include <Windows.h>
@@ -17,9 +18,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <signal.h>
 #endif
 
-#include "ecm.h"
-
-const mpz_class ECM::F_12 = (mpz_class(1) << (1 << 12)) + 1;
+#include "ecm_i.h"
 
 class application
 {
@@ -27,10 +26,11 @@ private:
 	struct deleter { void operator()(const application * const p) { delete p; } };
 
 private:
-	static void quit(int)
-	{
-		ECM::getInstance().quit();
-	}
+	ECM_i * _ecm = nullptr;
+
+private:
+	static void quit(int) { getInstance().quit(); }
+	void quit() { if (_ecm != nullptr) _ecm->quit(); }
 
 private:
 #if defined (_WIN32)
@@ -130,7 +130,7 @@ public:
 		std::random_device rd; std::uniform_int_distribution<uint64_t> dist(6, uint64_t(-1));
 
 		size_t thread_count = 3;
-		uint64_t B1 = 100000, B2 = 0;
+		uint64_t B1 = 10000, B2 = 0;
 		uint64_t sigma_0 = 6;	//dist(rd);
 
 		// parse args
@@ -163,8 +163,13 @@ public:
 		if (B2 == 0) B2 = 100 * B1;
 		if (B2 < B1) B2 = B1;
 
-		ECM & ecm = ECM::getInstance();
-		ecm.run(B1, B2, sigma_0, thread_count);
+		_ecm = new ECM_sse4();
+		_ecm->run(B1, B2, sigma_0, thread_count);
+		delete _ecm;
+
+		_ecm = new ECM_avx();
+		_ecm->run(B1, B2, sigma_0, thread_count);
+		delete _ecm;
 	}
 };
 

@@ -29,13 +29,14 @@ inline mpz_class mpz(const uint64_t n)
 	return z;
 }
 
+template<typename VComplex>
 class ECM
 {
 private:
 	struct deleter { void operator()(const ECM * const p) { delete p; } };
 
 public:
-	ECM() {}
+	ECM() : F_12((mpz_class(1) << (1 << 12)) + 1) {}
 	virtual ~ECM() {}
 
 	static ECM & getInstance()
@@ -56,13 +57,13 @@ private:
 	std::atomic<size_t> _running_threads;
 	std::mutex _output_mutex;
 
-	static const mpz_class F_12;
+	const mpz_class F_12;
 
 public:
 	static const size_t D = 128;
 
 private:
-	static mpz_class gcd(const size_t i, const Res & x, const mpz_class & n)
+	static mpz_class gcd(const size_t i, const Res<VComplex> & x, const mpz_class & n)
 	{
 		mpz_class t = x.get_z(i); if (t < 0) t += n;
 		return ::gcd(t, n);
@@ -71,7 +72,7 @@ private:
 	static mpz_class cub_mod(const mpz_class & x, const mpz_class & n) { mpz_class t = (x * x * x) % n; if (t < 0) t += n; return t; }
 
 	// A such that the group order is divisible by 12 (H. Suyama)
-	static mpz_class A_12(const size_t i, const uint64_t sigma, const mpz_class & n, EC::Point & P0)
+	static mpz_class A_12(const size_t i, const uint64_t sigma, const mpz_class & n, typename EC<VComplex>::Point & P0)
 	{
 		const mpz_class s = mpz(sigma);
 		const mpz_class u = s * s - 5, v = 4 * s;
@@ -118,14 +119,14 @@ private:
 	{
 		const uint64_t B1 = _B1, B2 = _B2;
 
-		EC ec(thread_index);
-		EC::Point P(thread_index);
+		EC<VComplex> ec(thread_index);
+		typename EC<VComplex>::Point P(thread_index);
 
-		EC::Point S[D]; for (size_t i = 0; i < D; ++i) S[i].init(thread_index);
-		Res beta[D]; for (size_t i = 0; i < D; ++i) beta[i].init(thread_index);
+		typename EC<VComplex>::Point S[D]; for (size_t i = 0; i < D; ++i) S[i].init(thread_index);
+		Res<VComplex> beta[D]; for (size_t i = 0; i < D; ++i) beta[i].init(thread_index);
 
-		EC::Point T(thread_index), R(thread_index);;
-		Res g(thread_index), alpha(thread_index), t1(thread_index), t2(thread_index);
+		typename EC<VComplex>::Point T(thread_index), R(thread_index);;
+		Res<VComplex> g(thread_index), alpha(thread_index), t1(thread_index), t2(thread_index);
 
 		PseudoPrmGen prmGen;
 

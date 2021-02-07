@@ -11,6 +11,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 
 #include "complex.h"
 
+template<typename VComplex>
 struct Transform
 {
 	static void forward4(const size_t m, VComplex * const z, const Complex * const w)

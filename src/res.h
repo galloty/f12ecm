@@ -12,7 +12,8 @@ Please give feedback to the authors if improvement is realized. It is distribute
 
 #include <gmpxx.h>
 
-class Res : public Transform
+template<typename VComplex>
+class Res : public Transform<VComplex>
 {
 private:
 	static const size_t _n = 256 / 2;	// F_12 = 65536^256 + 1
@@ -112,7 +113,7 @@ public:
 	{
 		const Complex * const w123 = mainPool.w123;
 
-		forward4_0(_n / 4, _z);
+		this->forward4_0(_n / 4, _z);
 		for (size_t j = 0; j < 4; ++j)
 		{
 			VComplex * const z = &_z[j * _n / 4];
@@ -120,15 +121,15 @@ public:
 			const Complex * const w = &w123[3 * (4 + j)];
 			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
 			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
-			forward4(8, z, w);
-			for (size_t i = 0; i < 4; ++i) forward4(2, &z[8 * i], &w4[3 * i]);
-			for (size_t i = 0; i < 4; ++i) square2(&z[8 * i], ws[3 * 2 * i]);
-			for (size_t i = 0; i < 4; ++i) backward4(2, &z[8 * i], &w4[3 * i]);
-			backward4(8, z, w);
+			this->forward4(8, z, w);
+			for (size_t i = 0; i < 4; ++i) this->forward4(2, &z[8 * i], &w4[3 * i]);
+			for (size_t i = 0; i < 4; ++i) this->square2(&z[8 * i], ws[3 * 2 * i]);
+			for (size_t i = 0; i < 4; ++i) this->backward4(2, &z[8 * i], &w4[3 * i]);
+			this->backward4(8, z, w);
 		}
-		backward4_0(_n / 4, _z);
+		this->backward4_0(_n / 4, _z);
 
-		norm(_z, _n);
+		this->norm(_z, _n);
 	}
 
 	void mul(const Res & x)
@@ -138,8 +139,8 @@ public:
 
 		const Complex * const w123 = mainPool.w123;
 
-		forward4_0(_n / 4, _z);
-		forward4_0(_n / 4, r_z);
+		this->forward4_0(_n / 4, _z);
+		this->forward4_0(_n / 4, r_z);
 		for (size_t j = 0; j < 4; ++j)
 		{
 			VComplex * const z = &_z[j * _n / 4];
@@ -148,17 +149,17 @@ public:
 			const Complex * const w = &w123[3 * (4 + j)];
 			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
 			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
-			forward4(8, z, w);
-			forward4(8, zr, w);
-			for (size_t i = 0; i < 4; ++i) forward4(2, &z[8 * i], &w4[3 * i]);
-			for (size_t i = 0; i < 4; ++i) forward4(2, &zr[8 * i], &w4[3 * i]);
-			for (size_t i = 0; i < 4; ++i) mul2(&z[8 * i], &zr[8 * i], ws[3 * 2 * i]);
-			for (size_t i = 0; i < 4; ++i) backward4(2, &z[8 * i], &w4[3 * i]);
-			backward4(8, z, w);
+			this->forward4(8, z, w);
+			this->forward4(8, zr, w);
+			for (size_t i = 0; i < 4; ++i) this->forward4(2, &z[8 * i], &w4[3 * i]);
+			for (size_t i = 0; i < 4; ++i) this->forward4(2, &zr[8 * i], &w4[3 * i]);
+			for (size_t i = 0; i < 4; ++i) this->mul2(&z[8 * i], &zr[8 * i], ws[3 * 2 * i]);
+			for (size_t i = 0; i < 4; ++i) this->backward4(2, &z[8 * i], &w4[3 * i]);
+			this->backward4(8, z, w);
 		}
-		backward4_0(_n / 4, _z);
+		this->backward4_0(_n / 4, _z);
 
-		norm(_z, _n);
+		this->norm(_z, _n);
 	}
 
 	void mul(const Res & x, const Res & y)
