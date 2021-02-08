@@ -111,7 +111,7 @@ private:
 		}
 
 		std::lock_guard<std::mutex> guard(_output_mutex);
-		std::cout << ss.str();
+		std::cout << "                                                  \r" << ss.str();
 		std::ofstream logFile("f12.log", std::ios::app);
 		if (logFile.is_open())
 		{
@@ -147,12 +147,18 @@ private:
 				ec.set(i, A, F_12);
 			}
 
-			uint64_t p = prmGen.first();
+			uint64_t p = prmGen.first(), disp = 100000;
 			for (; p <= B1; p = prmGen.next())
 			{
 				uint64_t m = p; while (m * p <= B1) m *= p;
 				ec.mul(P, P, m);
 				if (_quit) break;
+				if ((thread_index == 0) && (p > disp))
+				{
+					disp += 100000;
+					const std::chrono::duration<double> dt = std::chrono::steady_clock::now() - clock0;
+					std::cout << "p = " << p << " (B1:" << (100 * p) / B1 << "%), " << std::lrint(dt.count()) << " seconds\r";
+				}
 			}
 
 			const auto clock1 = std::chrono::steady_clock::now();
@@ -193,6 +199,13 @@ private:
 				ec.sum(T, R, S[D - 1], T);
 				T.swap(R);
 				if (_quit) break;
+
+				if ((thread_index == 0) && (p > disp))
+				{
+					disp += 10000000;
+					const std::chrono::duration<double> dt = std::chrono::steady_clock::now() - clock0;
+					std::cout << "p = " << p << " (B2:" << (100 * p) / B2 << "%), " << std::lrint(dt.count()) << " seconds\r";
+				}
 			}
 
 			const auto clock2 = std::chrono::steady_clock::now();
@@ -221,7 +234,8 @@ public:
 
 		const size_t v_size = sizeof(VComplex) / sizeof(Complex);
 
-		std::cout << "Testing " << v_size * thread_count << " curves with " << ext << " extension..." << std::endl;
+		std::cout << "Testing " << v_size * thread_count << " curves (" << ext << ", " << thread_count << " thread(s)), B1 = "
+				<< B1 << ", B2 = " << B2 << "." << std::endl;
 
 		mainPool.init(ECM::D, v_size * sizeof(Complex), thread_count);
 

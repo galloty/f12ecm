@@ -81,15 +81,6 @@ private:
 			"unknown";
 #endif
 
-		const char * const cpu =
-#if defined (__AVX512F__)
-			"AVX-512";
-#elif defined (__AVX__)
-			"AVX";
-#else
-			"SSE4";
-#endif
-
 		std::ostringstream ssc;
 #if defined(__GNUC__)
 		ssc << "gcc-" << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__;
@@ -98,7 +89,7 @@ private:
 #endif
 
 		std::ostringstream ss;
-		ss << "f12ecm 0.1.0 " << sys << "/" << cpu << "/" << ssc.str() << std::endl;
+		ss << "f12ecm 0.1.0 " << sys << " " << ssc.str() << std::endl;
 		ss << "Copyright (c) 2021, Yves Gallot" << std::endl;
 		ss << "f12ecm is free source code, under the MIT license." << std::endl;
 		ss << std::endl;
@@ -174,7 +165,7 @@ public:
 		else if (__builtin_cpu_supports("fma"))
 		{
 			_ecm = new ECM_fma();
-			ext = "avx + fma";
+			ext = "avx-fma";
 		}
 		else if (__builtin_cpu_supports("avx"))
 		{
