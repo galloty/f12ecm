@@ -35,7 +35,12 @@ public:
 	double & real(const size_t i) { return _re[i]; }
 	double & imag(const size_t i) { return _im[i]; }
 
-	bool is_zero() const { return (_mm256_movemask_pd(_mm256_or_pd(_mm256_cmp_pd(_re, _mm256_setzero_pd(), _CMP_NEQ_OQ), _mm256_cmp_pd(_im, _mm256_setzero_pd(), _CMP_NEQ_OQ))) == 0); }
+	bool is_zero() const
+	{
+		const int mr = _mm256_movemask_pd(_mm256_cmp_pd(_re, _mm256_setzero_pd(), _CMP_NEQ_OQ));
+		const int mi = _mm256_movemask_pd(_mm256_cmp_pd(_im, _mm256_setzero_pd(), _CMP_NEQ_OQ));
+		return (mr | mi) == 0;
+	}
 
 	Complex4 & operator+=(const Complex4 & rhs) { _re += rhs._re; _im += rhs._im; return *this; }
 	Complex4 & operator-=(const Complex4 & rhs) { _re -= rhs._re; _im -= rhs._im; return *this; }
@@ -54,7 +59,11 @@ public:
 	Complex4 mulW(const Complex & rhs) const { return Complex4((_re - _im * rhs.imag()) * rhs.real(), (_im + _re * rhs.imag()) * rhs.real()); }
 	Complex4 mulWconj(const Complex & rhs) const { return Complex4((_re + _im * rhs.imag()) * rhs.real(), (_im - _re * rhs.imag()) * rhs.real()); }
 
-	Complex4 round() const { return Complex4(_mm256_round_pd(_re, _MM_FROUND_TO_NEAREST_INT), _mm256_round_pd(_im, _MM_FROUND_TO_NEAREST_INT)); }
+	Complex4 round() const
+	{
+		return Complex4(_mm256_round_pd(_re, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC),
+		                _mm256_round_pd(_im, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC));
+	}
 	Complex4 abs() const { const __v4df t = _mm256_set1_pd(-0.0); return Complex4(_mm256_andnot_pd(t, _re), _mm256_andnot_pd(t, _im)); }
 	Complex4 max(const Complex4 & rhs) const { return Complex4(_mm256_max_pd(_re, rhs._re), _mm256_max_pd(_im, rhs._im)); }
 

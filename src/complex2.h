@@ -54,7 +54,11 @@ public:
 	Complex2 mulW(const Complex & rhs) const { return Complex2((_re - _im * rhs.imag()) * rhs.real(), (_im + _re * rhs.imag()) * rhs.real()); }
 	Complex2 mulWconj(const Complex & rhs) const { return Complex2((_re + _im * rhs.imag()) * rhs.real(), (_im - _re * rhs.imag()) * rhs.real()); }
 
-	Complex2 round() const { return Complex2(_mm_round_pd(_re, _MM_FROUND_TO_NEAREST_INT), _mm_round_pd(_im, _MM_FROUND_TO_NEAREST_INT)); }
+	Complex2 round() const
+	{
+		return Complex2(_mm_round_pd(_re, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC),
+		                _mm_round_pd(_im, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC));
+	}
 	Complex2 abs() const { const __v2df t = _mm_set1_pd(-0.0); return Complex2(_mm_andnot_pd(t, _re), _mm_andnot_pd(t, _im)); }
 	Complex2 max(const Complex2 & rhs) const { return Complex2(_mm_max_pd(_re, rhs._re), _mm_max_pd(_im, rhs._im)); }
 

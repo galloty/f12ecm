@@ -7,6 +7,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 
 #include <cstdint>
 #include <cstdlib>
+#include <string>
 #include <random>
 #include <iostream>
 #include <sstream>
@@ -110,7 +111,7 @@ private:
 		std::ostringstream ss;
 		ss << " Usage: f12ecm [options]  options may be specified in any order" << std::endl;
 		ss << "   -t <n>      number of threads (default: 3)" << std::endl;
-		ss << "   -b <n>      bound of stage 1 (default: B1 = 100000)" << std::endl;
+		ss << "   -b <n>      bound of stage 1 (default: B1 = 1000000)" << std::endl;
 		ss << "   -B <n>      bound of stage 2 (default: B2 = 100*B1)" << std::endl;
 		ss << "   -s <n>      sigma in Montgomery-Suyama-12 EC (default: random)" << std::endl;
 		ss << std::endl;
@@ -130,8 +131,8 @@ public:
 		std::random_device rd; std::uniform_int_distribution<uint64_t> dist(6, uint64_t(-1));
 
 		size_t thread_count = 3;
-		uint64_t B1 = 10000, B2 = 0;
-		uint64_t sigma_0 = 6;	//dist(rd);
+		uint64_t B1 = 1000000, B2 = 0;
+		uint64_t sigma_0 = dist(rd);
 
 		// parse args
 		for (size_t i = 0, size = args.size(); i < size; ++i)
@@ -163,12 +164,29 @@ public:
 		if (B2 == 0) B2 = 100 * B1;
 		if (B2 < B1) B2 = B1;
 
-		_ecm = new ECM_sse4();
-		_ecm->run(B1, B2, sigma_0, thread_count);
-		delete _ecm;
-
-		_ecm = new ECM_avx();
-		_ecm->run(B1, B2, sigma_0, thread_count);
+		__builtin_cpu_init();
+		std::string ext;
+		if (__builtin_cpu_supports("avx512f"))
+		{
+			_ecm = new ECM_avx512();
+			ext = "avx-512";
+		}
+		else if (__builtin_cpu_supports("fma"))
+		{
+			_ecm = new ECM_fma();
+			ext = "avx + fma";
+		}
+		else if (__builtin_cpu_supports("avx"))
+		{
+			_ecm = new ECM_avx();
+			ext = "avx";
+		}
+		else
+		{
+			_ecm = new ECM_sse4();
+			ext = "sse4";
+		}
+		_ecm->run(B1, B2, sigma_0, thread_count, ext);
 		delete _ecm;
 	}
 };

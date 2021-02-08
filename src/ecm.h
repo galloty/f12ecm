@@ -15,6 +15,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 #include "pool.h"
 #include "prm.h"
@@ -85,32 +86,36 @@ private:
 		return t;
 	}
 
-	void output(const uint64_t sigma, const int level, const uint64_t B, const mpz_class & g)
+	void output(const int stage, const std::vector<std::pair<uint64_t, mpz_class>> & sol, const long time)
 	{
 		static const mpz_class p[6] = {
 			mpz_class("114689"), mpz_class("26017793"), mpz_class("63766529"), mpz_class("190274191361"),
 			mpz_class("1256132134125569"), mpz_class("568630647535356955169033410940867804839360742060818433") };
 
-		mpz_class r = g;
-
 		std::stringstream ss;
-		ss << "sigma = " << sigma << ", B" << level << " = " << B << ":";
-		for (size_t i = 0; i < sizeof(p)/sizeof(mpz_class); ++i)
+		ss << "Stage " << stage << ", " << time << " seconds:" << std::endl;
+		for (const auto & pair : sol)
 		{
-			if (mpz_divisible_p(r.get_mpz_t(), p[i].get_mpz_t()))
+			ss << "sigma = " << pair.first << ":";
+			mpz_class r = pair.second;
+			for (size_t i = 0; i < sizeof(p)/sizeof(mpz_class); ++i)
 			{
-				ss << " " << p[i].get_str();
-				r /= p[i];
+				if (mpz_divisible_p(r.get_mpz_t(), p[i].get_mpz_t()))
+				{
+					ss << " " << p[i].get_str();
+					r /= p[i];
+				}
 			}
+			if (r != 1) ss << " " << r.get_str() << " !!!";
+			ss << std::endl;
 		}
-		if (r != 1) ss << " " << r.get_str() << " !!!";
 
 		std::lock_guard<std::mutex> guard(_output_mutex);
-		std::cout << ss.str() << std::endl;
+		std::cout << ss.str();
 		std::ofstream logFile("f12.log", std::ios::app);
 		if (logFile.is_open())
 		{
-			logFile << ss.str() << std::endl;
+			logFile << ss.str();
 			logFile.flush(); logFile.close();
 		}
 	}
@@ -130,9 +135,13 @@ private:
 
 		PseudoPrmGen prmGen;
 
-		for (uint64_t sigma = _sigma_0 + VCOMPLEX_SIZE * thread_index; sigma < _sigma_0 + VCOMPLEX_SIZE * _thread_count; sigma += VCOMPLEX_SIZE * _thread_count)
+		const size_t v_size = sizeof(VComplex) / sizeof(Complex);
+
+		for (uint64_t sigma = _sigma_0 + v_size * thread_index; sigma < _sigma_0 + v_size * _thread_count; sigma += v_size * _thread_count)
 		{
-			for (size_t i = 0; i < VCOMPLEX_SIZE; ++i)
+			const auto clock0 = std::chrono::steady_clock::now();
+
+			for (size_t i = 0; i < v_size; ++i)
 			{
 				const mpz_class A = A_12(i, sigma + i, F_12, P);
 				ec.set(i, A, F_12);
@@ -146,12 +155,18 @@ private:
 				if (_quit) break;
 			}
 
-			for (size_t i = 0; i < VCOMPLEX_SIZE; ++i)
+			const auto clock1 = std::chrono::steady_clock::now();
+			const std::chrono::duration<double> dt1 = clock1 - clock0;
+
+			std::vector<std::pair<uint64_t, mpz_class>> sol1;
+			for (size_t i = 0; i < v_size; ++i)
 			{
 				const mpz_class g1 = gcd(i, P.z(), F_12);
-				if (g1 != 1) output(sigma + i, 1, B1, g1);
+				if (g1 != 1) sol1.push_back(std::make_pair(sigma + i, g1));
 			}
 			if (_quit) break;
+
+			if (!sol1.empty()) output(1, sol1, std::lrint(dt1.count()));
 
 			ec.dbl(S[0], P); ec.dbl(S[1], S[0]);
 			for (size_t d = 2; d < D; ++d) ec.sum(S[d], S[d - 1], S[0], S[d - 2]);
@@ -161,7 +176,7 @@ private:
 			const uint64_t r_min = p - 2;
 			ec.mul(T, P, r_min - 2 * D), ec.mul(R, P, r_min);
 
-			for (size_t i = 0; i < VCOMPLEX_SIZE; ++i) g.set_z(i, mpz_class(1));	// TODO set_1
+			for (size_t i = 0; i < v_size; ++i) g.set_z(i, mpz_class(1));	// TODO set_1
 
 			for (uint64_t r = r_min; r < B2; r += 2 * D)
 			{
@@ -180,11 +195,17 @@ private:
 				if (_quit) break;
 			}
 
-			for (size_t i = 0; i < VCOMPLEX_SIZE; ++i)
+			const auto clock2 = std::chrono::steady_clock::now();
+			const std::chrono::duration<double> dt2 = clock2 - clock1;
+
+			std::vector<std::pair<uint64_t, mpz_class>> sol2;
+			for (size_t i = 0; i < v_size; ++i)
 			{
 				const mpz_class g2 = gcd(i, g, F_12);
-				output(sigma + i, 2, B2, g2);
+				if (g2 != 1) sol2.push_back(std::make_pair(sigma + i, g2));
 			}
+
+			if (!sol2.empty()) output(2, sol2, std::lrint(dt2.count()));
 		};
 
 		mainPool.free(thread_index);
@@ -193,14 +214,16 @@ private:
 	}
 
 public:
-	void run(const uint64_t B1, const uint64_t B2, const uint64_t sigma_0, const size_t thread_count)
+	void run(const uint64_t B1, const uint64_t B2, const uint64_t sigma_0, const size_t thread_count, const std::string & ext)
 	{
 		_B1 = B1; _B2 = B2; _sigma_0 = sigma_0;
 		_thread_count = thread_count; _running_threads = 0;
 
-		std::cout << "Testing " << VCOMPLEX_SIZE * thread_count << " curves..." << std::endl;
+		const size_t v_size = sizeof(VComplex) / sizeof(Complex);
 
-		mainPool.init(ECM::D, VCOMPLEX_SIZE * sizeof(Complex), thread_count);
+		std::cout << "Testing " << v_size * thread_count << " curves with " << ext << " extension..." << std::endl;
+
+		mainPool.init(ECM::D, v_size * sizeof(Complex), thread_count);
 
 		for (size_t i = 0; i < thread_count; ++i)
 		{
