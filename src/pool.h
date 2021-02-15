@@ -16,6 +16,7 @@ public:
 	Complex w123[256];
 
 private:
+	size_t _size;
 	std::vector<char *> _mem;
 	std::vector<size_t> _offset;
 

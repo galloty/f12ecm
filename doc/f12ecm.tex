@@ -43,11 +43,6 @@
 \let\c@table\c@figure
 \makeatother 
 
-\DeclareMathOperator{\bit}{bit}
-\DeclareMathOperator{\bitRev}{bitRev}
-\DeclareMathOperator{\re}{Re}
-\DeclareMathOperator{\im}{Im}
-
 \newcommand\T{\rule{0pt}{2.6ex}}
 \newcommand\B{\rule[-1.4ex]{0pt}{0pt}} 
 
@@ -56,9 +51,9 @@
 \begin{titlepage}
 	\centering
 	\vspace*{2cm}
-	{\scshape\huge f\textsubscript{12}ecm\par}
+	{\scshape\Huge f\textsubscript{12}ecm\par}
 	\vspace{2cm}
-	{\scshape\Large A program for finding\\the factors of\\the 12\textsuperscript{th} Fermat number\par}
+	{\scshape\Large A program for finding\\the factors of\\the twelfth Fermat number\par}
 	\vspace{4cm}
 	{\huge\bfseries Elliptic Curve Method\\and\\Probabilities\par}
 	\vspace{4cm}
@@ -91,7 +86,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-\chapter{Introduction}
+\chapter{Fermat numbers}
 
 \epigraph{Si je puis une fois tenir la raison fondamentale que 3, 5, 17, etc. sont nombres premiers,
 il me semble que je trouverai de très belles choses en cette matière,}
@@ -116,11 +111,82 @@ The smallest Fermat number which is not completely factored is $F_{12}$. Six pri
 	 & &$568630647535356955169033410940867804839360742060818433 \:\cdot\: C_{1133}$
 \end{tabular}
 
-\chapter{Elliptic curves over finite fields}
+\chapter{Elliptic curves modulo $p$}
+
+An elliptic curve over $\mathbb{Z}/p\mathbb{Z}$ is a set of points
+$P = (x, y) \in (\mathbb{Z}/p\mathbb{Z})^2$ such that
+$$y^2 = x^3 + ax + b$$
+with the condition $4a^3 + 27b^2 \neq 0$ and an additional point at infinity $O$.
+
+The point $Q = (x, -y)$ is on the curve: $Q = -P$ is the point opposite of $P$.
+The curve has the property that if a non-vertical line intersects it at two points $P$ and $Q$,
+then it will also have a third point $R$ of intersection. The addition law is defined
+by $P + Q = -R$. If $P = Q$, the tangent of the curve at $P$ is considered.
+If the line is vertical, we have $P + -P = O$.
+The points on an elliptic curve and the addition form an abelian group.
+$O$ is the identity of the group: we have $P + O = O + P = P$.
+
+Hasse's theorem on elliptic curves over finite fields provides an estimate of the number of
+points. If $\#E$ is the order of the group of an elliptic curve $E$ over $\mathbb{Z}/p\mathbb{Z}$
+then
+$$|\#E - (p + 1) | \le 2\sqrt{p}.$$
+Given a prime $p > 3$ and any integer $n$ such that $|n - (p + 1)| \le 2\sqrt{p}$, there exists
+$a$ and $b$ such that $|\#E(a, b)| = n$. Furthermore, the numbers of points are uniformly
+distributed over the interval $[p + 1 - 2\sqrt{p},\, p + 1 + 2\sqrt{p}]$.
+
+To avoid the time-consuming inversion over $\mathbb{Z}/p\mathbb{Z}$, projective coordinates
+are preferred for computations. $X, Y, Z$ are integers such that $x = X/Z$ and $y = Y/Z$.
+If $P \neq O$ then $Z \neq 0$ and the coordinates of the identity $O$ are $(0, Y, 0)$.
+
+$y^2 = x^3 + ax + b$ is called the Weierstrass form but there exist some alternative representations
+of elliptic curves. Some of them are faster for computations.
+{\scshape f\textsubscript{12}ecm} representation is the Montgomery curve
+$$By^2 = x^3 + Ax^2 + x.$$
+The Montgomery curves are a subset of Weierstrass curves.
+
+Montgomery coordinates are the projective coordinates $(X, Z)$. The computation of $Y$
+is not needed for the Elliptic Curve Method.
 
 \chapter{Elliptic Curve Method}
-\section{Implementation}
-\section{Probabilities}
+\section{Algorithm}
+The elliptic curve factorization method (ECM) is an extension of Pollard's $p - 1$ algorithm
+\cite{Pollard1}.
+
+Pollard's $p - 1$ algorithm finds the prime factors $p$ such that $p - 1$ is $B$-smooth.\\
+If $p > 2$ and $e$ is a multiple of $p - 1$ then by Fermat's little theorem we have
+$2^e \equiv 1  \pmod{p}$. For a fixed bound $B$,
+$M = \prod_{\substack{p \le B\\ p \text{ prime}}} p^{ \lfloor \log_p{B} \rfloor }$
+is computed modulo $n$ and finally $g = \gcd(2^M - 1, n)$.\\ If $n$ is a composite integer,
+$p\, |\, n$, $p - 1$ is $B$-powersmooth and $q\, |\, n$ but $q - 1$ is not $B$-powersmooth
+then $ 1 < g < n$ and $g$ is a multiple of $p$.\\
+In practice, a two-stage variant of the algorithm is implemented: instead of requiring that
+$p - 1$ has all its factors less than $B$, if all but one of them are less than $B_1$ and
+the remaining factor is less than $B_2$ then the range $]B_1; B_2]$ can be tested more quickly.
+$M$ is computed for $B = B1$ and the second stage is
+$M' = \prod_{\substack{B_1 < p \le B_2\\ p \text{ prime}}} \left((2^M)^p - 1 \right)$.
+If $p_n$ and $p_{n+1}$ are two consecutive prime numbers then $A^{p_{n+1}} = A^{p_n} \cdot A^{d_n}$
+where $d_n = p_{n+1} - p_n$. The $d_n$ are relatively small then the values of $A^2, A^4, A^6, \ldots$
+can be precomputed. Then $(2^M)^p$ is calculated with a single multiplication. 
+
+Fermat's little theorem can be extended to a group $G$ such that each element of $G$ is invertible. 
+Pollard's $p - 1$ is based on ($\mathbb{Z}/p\mathbb{Z})^\times$.  A finite field of order $q$ exists
+if and only if $q = p^k$, where $p$ is a prime number and $k$ is a positive integer. The order of
+$\mathbf{F}_q^\times$ is $p^k - 1$. A factor of $p^k - 1$ is sufficient for Pollard's method and
+the factors of $p^k - 1$ are the cyclotomic polynomials \cite{BachShallit1}. But in practice
+this algorithm is slower than ECM except $p + 1$.
+
+Since the points on an elliptic curve over $\mathbb{Z}/p\mathbb{Z}$ forms an abelian group,
+Pollard's algorithm can be extended to this set. Because of Hasse's theorem, ECM is a
+"$p + 1 - a$" algorithm. $a$ is unknown and $a \in [-2\sqrt{p},\, 2\sqrt{p}]$. With different curves,
+we can expect that $a$ is a random number in a large range.
+
+If $\mathcal{P}$ is the probability that $p + 1 - a$ is $B$-smooth, with $n$ curves
+the likelihood of success is $\mathcal{P}_n = 1 - (1 - \mathcal{P})^n$. If $\mathcal{P} \ll 1$
+and $n \sim 1/\mathcal{P}$ then $\mathcal{P}_n = 1 - e^{-1} \approx 63.2\% $.\\
+If $\mathcal{P}$ is $1\%$ with Pollard's $p - 1$, the likelihood of success with ECM
+is $63.2\% $ with 100 curves and $99.99\% $ with 1000 curves.
+
+\section{Largest prime factors}
 
 Dickman \cite{Dickman1} proved that the probability that a large integer $n$ has no prime factor
 exceeding $n^\alpha$ approaches a limit $F(\alpha)$ as $n \to \infty$, where
@@ -190,26 +256,51 @@ This relation can be used for the numerical computation of $\rho_2$.
 	\caption{\label{fig:F_12} $F(\alpha)$ and $F_2(\alpha)$.}
 \end{figure}
 
+\section{Probabilities}
+
+\chapter{Implementation}
 
 \begin{thebibliography}{99}
 
-\bibitem{Brent1} Richard~P.~Brent, \emph{Factorization of the tenth Fermat number}, Math. Comp. \textbf{68} (1999), 429--451, DOI: \url{https://doi.org/10.1090/S0025-5718-99-00992-8}.
+\bibitem{BachShallit1} Eric~Bach and Jeffrey~Shallit, \emph{Factoring with cyclotomic polynomials},
+Math. Comp. \textbf{52} (1989), 201--219, DOI: \url{https://doi.org/10.1090/S0025-5718-1989-0947467-1}.
 
-\bibitem{Brent2} Richard~P.~Brent, \emph{Factorization of the tenth and eleventh Fermat numbers}, Report TR-CS-96-02, Computer Sciences Laboratory, Australian National Univ., Canberra, Feb. 1996, \url{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.70.6415&rep=rep1&type=pdf}.
+\bibitem{Brent1} Richard~P.~Brent, \emph{Factorization of the tenth Fermat number}, Math. Comp.
+\textbf{68} (1999), 429--451, DOI: \url{https://doi.org/10.1090/S0025-5718-99-00992-8}.
 
-\bibitem{BrentPollard1} Richard~P.~Brent and John~M.~Pollard, \emph{Factorization of the eighth Fermat number}, Math. Comp. \textbf{36} (1981), 627--630, DOI: \url{https://doi.org/10.1090/S0025-5718-1981-0606520-5}.
+\bibitem{Brent2} Richard~P.~Brent, \emph{Factorization of the tenth and eleventh Fermat numbers},
+Report TR-CS-96-02, Computer Sciences Laboratory, Australian National Univ., Canberra, Feb. 1996,
+\url{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.70.6415&rep=rep1&type=pdf}.
 
-\bibitem{Dickman1} Karl~Dickman, \emph{On the Frequency of Numbers Containing Prime Factors of a Certain Relative Magnitude}, Arkiv för Mat., Astron. och Fys. 22A, 1-14, 1930. 
+\bibitem{BrentPollard1} Richard~P.~Brent and John~M.~Pollard, \emph{Factorization of the eighth
+Fermat number}, Math. Comp. \textbf{36} (1981), 627--630, DOI:
+\url{https://doi.org/10.1090/S0025-5718-1981-0606520-5}.
 
-\bibitem{Fermat1} Pierre~de~Fermat, \emph{Lettre à Marin Mersenne}, \url{https://www.archive.org/stream/oeuvresdefermat942ferm#page/212/mode/2up}.
+\bibitem{Dickman1} Karl~Dickman, \emph{On the Frequency of Numbers Containing Prime Factors
+of a Certain Relative Magnitude}, Arkiv för Mat., Astron. och Fys. 22A, 1-14, 1930. 
 
-\bibitem{KnuthPardo1} Donald~E.~Knuth and Luis~Trabb~Pardo, \emph{Analysis of a simple factorization algorithm}, Theoretical Computer Science, Volume 3, Issue 3, December 1976, Pages 321--348, DOI: \url{https://doi.org/10.1016/0304-3975(76)90050-5}.
+\bibitem{Fermat1} Pierre~de~Fermat, \emph{Lettre à Marin Mersenne},
+\url{https://www.archive.org/stream/oeuvresdefermat942ferm#page/212/mode/2up}.
 
-\bibitem{Lenstra2ManassePollard} A.~K.~Lenstra, H.~W.~Lenstra, M.~S.~Manasse and J.~M.~Pollard, \emph{The factorization of the ninth Fermat number}, Math. Comp. \textbf{61} (1993), 319--349, DOI: \url{https://doi.org/10.1090/S0025-5718-1993-1182953-4}.
+\bibitem{KnuthPardo1} Donald~E.~Knuth and Luis~Trabb~Pardo, \emph{Analysis of a simple
+factorization algorithm}, Theoretical Computer Science, Volume 3, Issue 3, December 1976,
+Pages 321--348, DOI: \url{https://doi.org/10.1016/0304-3975(76)90050-5}.
 
-\bibitem{LuneWattel1} J.~van~de~Lune and E.~Wattel, \emph{On the numerical solution of a differential-difference equation arising in analytic number theory}, Math. Comp. \textbf{23} (1969), 417--421, DOI: \url{https://doi.org/10.1090/S0025-5718-1969-0247789-3}.
+\bibitem{Lenstra2ManassePollard} A.~K.~Lenstra, H.~W.~Lenstra, M.~S.~Manasse and J.~M.~Pollard
+\emph{The factorization of the ninth Fermat number}, Math. Comp. \textbf{61} (1993), 319--349,
+DOI: \url{https://doi.org/10.1090/S0025-5718-1993-1182953-4}.
 
-\bibitem{MorrisonBrillhart1} Michael~A.~Morrison and John~Brillhart, \emph{A method of factoring and the factorization of $F_7$}, Math. Comp. \textbf{29} (1975), 183--205, DOI: \url{https://doi.org/10.1090/S0025-5718-1975-0371800-5}.
+\bibitem{LuneWattel1} J.~van~de~Lune and E.~Wattel, \emph{On the numerical solution of a
+differential-difference equation arising in analytic number theory}, Math. Comp. \textbf{23}
+(1969), 417--421, DOI: \url{https://doi.org/10.1090/S0025-5718-1969-0247789-3}.
+
+\bibitem{MorrisonBrillhart1} Michael~A.~Morrison and John~Brillhart, \emph{A method of factoring
+and the factorization of $F_7$}, Math. Comp. \textbf{29} (1975), 183--205,
+DOI: \url{https://doi.org/10.1090/S0025-5718-1975-0371800-5}.
+
+\bibitem{Pollard1} J.~M.~Pollard, \emph{Theorems on factorization and  primality testing},
+Mathematical Proceedings of the Cambridge Philosophical Society, Volume \textbf{76}, Issue 3,
+November 1974, pp. 521 - 528, DOI: \url{https://doi.org/10.1017/S0305004100049252}.
 
 \bibitem{Vang1} \url{https://caramel.loria.fr/f12.txt}.
 

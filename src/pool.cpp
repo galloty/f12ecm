@@ -5,6 +5,8 @@ f12ecm is free source code, under the MIT license (see LICENSE). You can redistr
 Please give feedback to the authors if improvement is realized. It is distributed in the hope that it will be useful.
 */
 
+#include <stdexcept>
+
 #include "pool.h"
 
 inline size_t bit_rev(const size_t i, const size_t n)
@@ -28,13 +30,15 @@ void MainPool::init(const size_t D, const size_t vec_size, const size_t thread_c
 		}
 	}
 
+	// ec: 3 points and 2 res: 8
+	// P, Se, T, R, Rm: 5 points: 10
+	// S: D points: 2*D
+	// g, t1, t2: 3 res: 3
+	_size = vec_size * (256 / 2) * (2 * D + 21);
+
 	for (size_t i = 0; i < thread_count; ++i)
 	{
-		// ec: 3 points and 2 res: 8
-		// P, T, C: 3 points: 6
-		// S, beta: D points and D res: 3*D
-		// g, alpha, t1, t2: 4 res: 4
-		char * const ptr = static_cast<char *>(::_aligned_malloc(vec_size * (256 / 2) * (3 * D + 18), 1024));
+		char * const ptr = static_cast<char *>(::_aligned_malloc(_size, 1024));
 		_mem.push_back(ptr);
 		_offset.push_back(0);
 	}
@@ -50,6 +54,7 @@ void MainPool::release()
 void * MainPool::alloc(const size_t thread_index, const size_t n)
 {
 	const size_t offset = _offset[thread_index];
+	if (offset + n > _size) throw std::runtime_error("MainPool::alloc");
 	_offset[thread_index] = offset + n;
 	return _mem[thread_index] + offset;
 }

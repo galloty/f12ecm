@@ -49,7 +49,7 @@ public:
 			if (d > s) _prm[i++] = k;
 		}
 
-		if (i != odd_prime_count) throw;
+		// if (i != odd_prime_count) throw std::runtime_error("PseudoPrmGen");
 	}
 
 	uint64_t first()
