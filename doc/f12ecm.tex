@@ -14,7 +14,8 @@
 \usepackage{mathtools}
 \usepackage[svgnames]{xcolor}
 \usepackage{multirow}
-\usepackage{enumitem} 
+\usepackage{enumitem}
+\usepackage{caption} 
 
 \usepackage{fullpage}
 \setlength\parindent{0pt}
@@ -148,7 +149,9 @@ Montgomery coordinates are the projective coordinates $(X, Z)$. The computation 
 is not needed for the Elliptic Curve Method.
 
 \chapter{Elliptic Curve Method}
+
 \section{Algorithm}
+
 The elliptic curve factorization method (ECM) is an extension of Pollard's $p - 1$ algorithm
 \cite{Pollard1}.
 
@@ -166,7 +169,7 @@ $M$ is computed for $B = B1$ and the second stage is
 $M' = \prod_{\substack{B_1 < p \le B_2\\ p \text{ prime}}} \left((2^M)^p - 1 \right)$.
 If $p_n$ and $p_{n+1}$ are two consecutive prime numbers then $A^{p_{n+1}} = A^{p_n} \cdot A^{d_n}$
 where $d_n = p_{n+1} - p_n$. The $d_n$ are relatively small then the values of $A^2, A^4, A^6, \ldots$
-can be precomputed. Then $(2^M)^p$ is calculated with a single multiplication. 
+can be precomputed. Then $\left(2^M \right)^p$ is calculated with a single multiplication. 
 
 Fermat's little theorem can be extended to a group $G$ such that each element of $G$ is invertible. 
 Pollard's $p - 1$ is based on ($\mathbb{Z}/p\mathbb{Z})^\times$.  A finite field of order $q$ exists
@@ -220,7 +223,6 @@ This relation can be used for the numerical computation of $\rho$ by approximati
 with the trapezoidal formula \cite{LuneWattel1}. If $1 \leq u < 2$,
 $\rho(u) = 1 - \int_1^u \frac{dt}{t} = 1 - \log u$.
 
-
 Knuth and Trabb Pardo \cite{KnuthPardo1} extended Dickman's theorem and shown that the
 probability that the $k^\text{th}$ largest prime factor of a number $n$ is at most $n^\alpha$
 tends to a limiting distribution $F_k(\alpha)$ as $n \to \infty$, where $F_0(\alpha) = 0$ for all
@@ -247,17 +249,86 @@ Integrating by parts, we get
 $$\rho_k(u) = \frac{1}{u} \left( \int_{u-1}^u \rho_k(t)\, dt + \int_0^{u-1} \rho_{k-1}(t)\, dt \right).$$
 This relation can be used for the numerical computation of $\rho_2$.
 
-\bigskip
-
-\begin{figure}[ht]
-	\capstart
+\begin{figure}[!h]
 	\centering
 	\includegraphics[width=16cm, angle=0]{F_12.pdf}
 	\caption{\label{fig:F_12} $F(\alpha)$ and $F_2(\alpha)$.}
 \end{figure}
 
+\newpage
+
+The sizes of the two largest prime factors are correlated: let $n \approx 10^{100}$
+and $P \approx 10^{30}$ be the largest prime factor of $n$. We have $\alpha = 0.3$
+and $F(\alpha) \approx 0.02365$. However $F_2(0.0131) \approx 0.02365$ and
+$n^{0.0131} \approx 20.4$.
+The probability that the largest prime factor of $n$ is at most $10^{30}$ is equal to
+the probability that its second largest prime factor is at most $20.4$. But this result
+cannot be used to set $B_1$ and $B_2$. If the largest prime factor of $n$ is a 30-digit
+prime, the second largest prime factor is certainly larger than $20.4$.\\
+The remaining factor is $n / P \approx 10^{70}$ and its largest prime factor doesn't
+exceed $10^{30}$.
+
+$[$TODO$]$ Compute the correlated probability.
+
 \section{Probabilities}
 
+Let $B_1$ and $B_2$ be the bounds of a two-stage ECM, $n$ be the number of curves and $P$
+be a prime factor of $F_{12}$.
+
+Because of Hasse's theorem we have $\#E \approx P$. $F(\alpha)$ is the probability that
+the largest prime factor of $\#E$ is at most $P^\alpha$. One must have $B_2 \gtrsim P^\alpha$.
+Let $G(B_2) = F(\log B_2\, /\, \log P)$. If the second largest prime factor is larger than $B_1$
+then the likelihood of success for ECM is $\mathcal{P}(B_2, n) = 1 - \left(1 - G(B_2) \right)^n$.
+
+Note that $\lim\limits_{n \to \infty} \left(1 - x/n \right)^n = e^{-x}$. Hence, if
+$G(B_2) \ll 1$ we have $\mathcal{P}(B_2, n) \approx 1 - e^{-G(B_2)\, n}$.
+If $\mathcal{P}(B_2, n) = 1 - e^{-1} \approx 63.2\%$ is chosen as an acceptable
+likelihood of success, we have the condition $G(B_2)\, n = 1.$
+
+The number of operations per curve is about $\log(B_1\#) \sim B_1$ for stage 1 and about
+$B_2 / \log B_2$ for stage 2 if $B_1 \ll B_2$. Hence, computation time is proportional to
+$\left(B_1 + B_2 / \log B_2 \right)\, n$. If $B_1 = K \cdot B_2 / \log B_2$ then
+$\left(B_2 / \log B_2 \right)\, n$ must be minimal.
+
+Finally the condition is $G(B_2) \log B_2 /\, B_2$ is maximal and $n = 1 / G(B_2)$.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=14cm, angle=0]{cond_max.pdf}
+	\caption{\label{fig:max} $G(B_2) \log B_2 /\, B_2$ for $P = 5\cdot10^{49}$.}
+\end{figure}
+
+Let $P = 5\cdot10^{49}$ be an average 50-digit prime.
+$G(B_2) \log B_2 /\, B_2$ is maximal for $B_2 \approx 190\cdot 10^6$. We have
+$G(B_2) \approx 1.95\cdot 10^{-5}$ and $n \approx 51400$.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=14cm, angle=0]{n_curves.pdf}
+	\caption{\label{fig:p_n} Probability of success for $n$ curves, $B_2 = 190\cdot 10^6$.}
+\end{figure}
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=14cm, angle=0]{prob_digits.pdf}
+	\caption{\label{fig:B2_dgt} Chance to find a $n$-digit factor, $B_2 = 190\cdot 10^6$ and $n = 51400$.}
+\end{figure}
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=14cm, angle=0]{B2_digits.pdf}
+	\caption{\label{fig:B2_dgt} Optimal $B_2$ as a function of the number of digits.}
+\end{figure}
+
+\begin{figure}[!h]
+	\captionsetup{format=hang, justification=centering}
+	\centering
+	\includegraphics[width=14cm, angle=0]{TODO.pdf}
+	\caption{\label{fig:B2_dgt} Number of curves as a function of the number of digits.\\
+	$B_2$ is optimal and $\mathcal{P}(B_2, n) = 63.2\%$.}
+\end{figure}
+
+%
 \chapter{Implementation}
 
 \begin{thebibliography}{99}
