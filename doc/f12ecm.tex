@@ -195,14 +195,14 @@ Dickman \cite{Dickman1} proved that the probability that a large integer $n$ has
 exceeding $n^\alpha$ approaches a limit $F(\alpha)$ as $n \to \infty$, where
 \begin{equation*}
 F(\alpha) = \begin{cases}
-1 - \int_\alpha^1 F(\frac{t}{1-t}) \frac{dt}{t} & \text{if } 0 \leq \alpha < 1 \text{,}\\
+1 - \int_\alpha^1 F \left(\frac{t}{1-t} \right) \frac{dt}{t} & \text{if } 0 \leq \alpha < 1 \text{,}\\
 1& \text{if } \alpha \geq 1 \text{.}
 \end{cases}
 \end{equation*}
 
-Let $u = 1/\alpha$. $F(1/u) = 1 - \int_{1/u}^1 F(\frac{t}{1-t})\, \frac{dt}{t}$.
+Let $u = 1/\alpha$. $F(1/u) = 1 - \int_{1/u}^1 F \left(\frac{t}{1-t} \right)\, \frac{dt}{t}$.
 If $t' = 1/t$ we have $\frac{t}{1-t} = \frac{1}{t' - 1}$ and $\frac{dt}{t} = -\frac{dt'}{t'}$
-then $F(1/u) = 1 - \int_1^u F(\frac{1}{t' - 1}) \frac{dt'}{t'}$. The relation becomes
+then $F(1/u) = 1 - \int_1^u F \left(\frac{1}{t' - 1} \right) \frac{dt'}{t'}$. The relation becomes
 \begin{equation*}
 F(1/u) = \rho(u) = \begin{cases}
 1 - \int_1^u \frac{\rho(t - 1)}{t}\, dt & \text{if } u > 1 \text{,}\\
@@ -229,7 +229,7 @@ tends to a limiting distribution $F_k(\alpha)$ as $n \to \infty$, where $F_0(\al
 $\alpha$ by convention and for $k \geq 1$
 \begin{equation*}
 F_k(\alpha) = \begin{cases}
-1 - \int_\alpha^1 \left( F_k(\frac{t}{1-t}) - F_{k-1}(\frac{t}{1-t}) \right) \frac{dt}{t} & \text{if } 0 \leq \alpha < 1 \text{,}\\
+1 - \int_\alpha^1 \left( F_k \left(\frac{t}{1-t} \right) - F_{k-1} \left(\frac{t}{1-t} \right) \right) \frac{dt}{t} & \text{if } 0 \leq \alpha < 1 \text{,}\\
 1& \text{if } \alpha \geq 1 \text{.}
 \end{cases}
 \end{equation*}
@@ -269,16 +269,18 @@ prime, the second largest prime factor is certainly larger than $20.4$.
 \section{Probabilities}
 
 Let $B_1$ and $B_2$ be the bounds of a two-stage ECM, $n$ be the number of curves and $p$
-be a prime factor of $F_{12}$.
+be a prime factor of $F_{12}$. $\mathcal{P}(B_1, B_2, n, p)$ is the chance for ECM to
+find $p$.
 
 If ECM finds $p$, because of Hasse's theorem we have $\#E \approx p$. $F(\alpha)$ is the probability that
 the largest prime factor of $\#E$ is at most $p^\alpha$. One must have $B_2 \gtrsim p^\alpha$.
 Let $G(B_2) = F(\log B_2\, /\, \log p)$. If the second largest prime factor is larger than $B_1$
-then the likelihood of success for ECM is $\mathcal{P}(B_2, n) = 1 - \left(1 - G(B_2) \right)^n$.
+then the likelihood of success for ECM is
+$\mathcal{P}(B_2, B_2, n, p) = 1 - \left(1 - G(B_2) \right)^n$.
 
 Note that $\lim\limits_{n \to \infty} \left(1 - x/n \right)^n = e^{-x}$. Hence, if
-$G(B_2) \ll 1$ we have $\mathcal{P}(B_2, n) \approx 1 - e^{-G(B_2)\, n}$.
-If $\mathcal{P}(B_2, n) = 1 - e^{-1} \approx 63.2\%$ is chosen as an acceptable
+$G(B_2) \ll 1$ we have $\mathcal{P}(B_2, B_2, n, p) \approx 1 - e^{-G(B_2)\, n}$.
+If $\mathcal{P}^*(B_2, B_2, n, p) = 1 - e^{-1} \approx 63.2\%$ is chosen as an acceptable
 likelihood of success, we have the condition $G(B_2)\, n = 1.$
 
 The number of operations per curve is about $\log(B_1\#) \sim B_1$ for stage 1 and about
@@ -321,10 +323,24 @@ We have $G(B_2) \approx 1.95\cdot 10^{-5}$ and $n \approx 51400$.
 
 The generalized Dickman function $F_2$ cannot be used to compute $B_1$ as a function of $B_2$ (see \autoref{chap:l_prm_fact}).
 
-If $p$ is the largest prime factor of $n$, the remaining factor is $m = n / p$ and the largest
-prime factor of $m$ doesn't exceed $p$.
+Let $G(\alpha, \beta)$ be the probability that the largest prime factor of a number $n$
+is at most $n^\alpha$ and that the second largest prime factor of $n$ is at most $n^\beta$.
+Following Knuth and Trabb Pardo \cite{KnuthPardo1} heuristic derivation, we have:
+\begin{equation*}
+G(\alpha, \beta) = \begin{cases}
+F(\beta) + \int_\beta^\alpha F \left(\frac{\beta}{1-t} \right) \frac{dt}{t} & \text{if } 0 \leq \beta < \alpha \text{,}\\
+F(\alpha) & \text{if } \beta \geq \alpha \text{.}
+\end{cases}
+\end{equation*}
 
+If $\beta \leq \alpha$ we have
+$G(\alpha, \beta) = F(\beta) + \int_\beta^\alpha \rho \left(\frac{1-t}{\beta} \right) \frac{dt}{t}$
+and $G(1/u, 1/v) = \rho(v) + \int_{1/v}^{1/u} \rho \left((1-t)\, v \right) \frac{dt}{t}$.
 
+Let $t' = (1-t)\, v + 1$. We have $t = (v + 1 - t')/v$, $dt = -dt'/v$ and
+$\frac{dt}{t} = -\frac{dt'}{v + 1 - t'}$. Hence,
+$$G(1/u, 1/v) = \sigma(u, v) = \rho(v) + \int_{v + 1 - v/u}^v \frac{\rho(t - 1)\, dt}{v + 1 - t}.$$
+This relation can be used for the numerical computation of $\sigma$.
 
 \subsection{Test of the probabilistic model}
 
