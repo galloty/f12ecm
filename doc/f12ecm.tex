@@ -274,31 +274,31 @@ find $p$.
 
 If ECM finds $p$, because of Hasse's theorem we have $\#E \approx p$. $F(\alpha)$ is the probability that
 the largest prime factor of $\#E$ is at most $p^\alpha$. One must have $B_2 \gtrsim p^\alpha$.
-Let $G(B_2) = F(\log B_2\, /\, \log p)$. If the second largest prime factor is larger than $B_1$
+Let $P(B_2) = F(\log B_2\, /\, \log p)$. If the second largest prime factor is larger than $B_1$
 then the likelihood of success for ECM is
-$\mathcal{P}(B_2, B_2, n, p) = 1 - \left(1 - G(B_2) \right)^n$.
+$\mathcal{P}(B_2, B_2, n, p) = 1 - \left(1 - P(B_2) \right)^n$.
 
 Note that $\lim\limits_{n \to \infty} \left(1 - x/n \right)^n = e^{-x}$. Hence, if
-$G(B_2) \ll 1$ we have $\mathcal{P}(B_2, B_2, n, p) \approx 1 - e^{-G(B_2)\, n}$.
+$P(B_2) \ll 1$ we have $\mathcal{P}(B_2, B_2, n, p) \approx 1 - e^{-P(B_2)\, n}$.
 If $\mathcal{P}^*(B_2, B_2, n, p) = 1 - e^{-1} \approx 63.2\%$ is chosen as an acceptable
-likelihood of success, we have the condition $G(B_2)\, n = 1.$
+likelihood of success, we have the condition $P(B_2)\, n = 1.$
 
 The number of operations per curve is about $\log(B_1\#) \sim B_1$ for stage 1 and about
 $B_2 / \log B_2$ for stage 2 if $B_1 \ll B_2$. Hence, computation time is proportional to
 $\left(B_1 + B_2 / \log B_2 \right)\, n$. If $B_1 = K \cdot B_2 / \log B_2$ then
 $\left(B_2 / \log B_2 \right)\, n$ must be minimal.
 
-Finally the conditions are $G(B_2) \log B_2 /\, B_2$ is maximal and $n = 1 / G(B_2)$.
+Finally the conditions are $P(B_2) \log B_2 /\, B_2$ is maximal and $n = 1 / P(B_2)$.
 
 \begin{figure}[!h]
 	\centering
 	\includegraphics[width=15.5cm, angle=0]{cond_max.pdf}
-	\caption{\label{fig:max} $G(B_2) \log B_2 /\, B_2$ for $p = 5\cdot10^{49}$.}
+	\caption{\label{fig:max} $P(B_2) \log B_2 /\, B_2$ for $p = 5\cdot10^{49}$.}
 \end{figure}
 
 Let $p = 5\cdot10^{49}$ be an average 50-digit prime.
-$G(B_2) \log B_2 /\, B_2$ is maximal for $B_2 \approx 190\cdot 10^6$.\\
-We have $G(B_2) \approx 1.95\cdot 10^{-5}$ and $n \approx 51400$.
+$P(B_2) \log B_2 /\, B_2$ is maximal for $B_2 \approx 190\cdot 10^6$.\\
+We have $P(B_2) \approx 1.95\cdot 10^{-5}$ and $n \approx 51400$.
 
 \begin{figure}[!ht]
 	\centering
@@ -341,6 +341,15 @@ Let $t' = (1-t)\, v + 1$. We have $t = (v + 1 - t')/v$, $dt = -dt'/v$ and
 $\frac{dt}{t} = -\frac{dt'}{v + 1 - t'}$. Hence,
 $$G(1/u, 1/v) = \sigma(u, v) = \rho(v) + \int_{v + 1 - v/u}^v \frac{\rho(t - 1)\, dt}{v + 1 - t}.$$
 This relation can be used for the numerical computation of $\sigma$.
+
+$P(B_2) = F(\log B_2\, /\, \log p)$ can be replaced with $P(B_2, B_1) = G(\log B_2\, /\, \log p,
+\log B_1\, /\, \log p)$. Now the likelihood of success for ECM is
+$\mathcal{P}(B_2, B_1, n, p) = 1 - \left(1 - P(B_2, B_1) \right)^n$.
+
+The computation time is proportional to $\left(K\cdot B_1 + B_2 / \log B_2 \right)\, n$, where
+$K \simeq 1$ depends on the implementation. Hence,
+$$\frac{K\cdot B_1 + B_2 / \log B_2}{P(B_2, B_1)}$$
+must be minimal.
 
 \subsection{Test of the probabilistic model}
 
