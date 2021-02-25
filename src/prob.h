@@ -26,7 +26,7 @@ private:
 public:
 	Prob()
 	{
-		const size_t n = 65536, u_max = 120, step = 4096;
+		const size_t n = 262144, u_max = 120, step = 256;
 		const double dt = 1 / double(n);
 		double * const f1 = new double[2 * n];
 		double * const f2 = new double[2 * n];
@@ -123,19 +123,75 @@ public:
 
 	double G(const double alpha, const double beta) const { return (beta < alpha) ? sigma(1 / alpha, 1 / beta) : F1(alpha); }
 
-	double B2(const int digits)
+	double B2(const int digits) const
 	{
-		const double P = 5 * pow(10.0, digits - 1);
+		const double logP = (digits - 1) * log(10.0) + log(5), eps = 1e-9;
 		double B2_min = 100, B2_max = 1e15;
 		while (true)
 		{
 			const double B2 = std::sqrt(B2_min * B2_max);
-			const double ct_inv = F1(log(B2) / log(P)) * log(B2) / B2;
-			const double B2_p = B2 * 1.0001;
-			const double ct_inv_p = F1(log(B2_p) / log(P)) * log(B2_p) / B2_p;
-			if (ct_inv_p > ct_inv) B2_min = B2; else B2_max = B2;
-			if (fabs(B2_max - B2_min) / B2_max < 1e-6) break;
+			const double B2_m = B2 * (1 - eps), logB2_m = log(B2_m);
+			const double f_m = F1(logB2_m / logP) * logB2_m / B2_m;
+			const double B2_p = B2 * (1 + eps), logB2_p = log(B2_p);
+			const double f_p = F1(logB2_p / logP) * logB2_p / B2_p;
+			if (f_p > f_m) B2_min = B2; else B2_max = B2;
+			if (fabs(B2_max - B2_min) / B2_max < eps) break;
 		}
 		return 0.5 * (B2_min + B2_max);
+	}
+
+	double B1(const int digits, const double B2) const
+	{
+		const double logP = (digits - 1) * log(10.0) + log(5), eps = 1e-9;
+		const double logB2 = log(B2), alpha = logB2 / logP;
+		double B1_min = B2 / 1000, B1_max = B2;
+		while (true)
+		{
+			const double B1 = std::sqrt(B1_min * B1_max);
+			const double B1_m = B1 * (1 - eps), logB1_m = log(B1_m);
+			const double f_m = G(alpha, logB1_m / logP) / (B1_m + B2 / logB2);
+			const double B1_p = B1 * (1 + eps), logB1_p = log(B1_p);
+			const double f_p = G(alpha, logB1_p / logP) / (B1_p + B2 / logB2);
+			if (f_p > f_m) B1_min = B1; else B1_max = B1;
+			if (fabs(B1_max - B1_min) / B1_max < eps) break;
+		}
+		return 0.5 * (B1_min + B1_max);
+	}
+
+	double B2(const int digits, const double B1, const double B2_0) const
+	{
+		const double logP = (digits - 1) * log(10.0) + log(5), eps = 1e-9;
+		const double beta = log(B1) / logP;
+		double B2_min = 0.5 * B2_0, B2_max = 2 * B2_0;
+		while (true)
+		{
+			const double B2 = 0.5 * (B2_min + B2_max);
+			const double B2_m = B2 * (1 - eps), logB2_m = log(B2_m);
+			const double f_m = G(logB2_m / logP, beta) / (B1 + B2_m / logB2_m);
+			const double B2_p = B2 * (1 + eps), logB2_p = log(B2_p);
+			const double f_p = G(logB2_p / logP, beta) / (B1 + B2_p / logB2_p);
+			if (f_p > f_m) B2_min = B2; else B2_max = B2;
+			if (fabs(B2_max - B2_min) / B2_max < eps) break;
+		}
+		return 0.5 * (B2_min + B2_max);
+	}
+
+	void B12(const int digits, double & rB1, double & rB2, int & n) const
+	{
+		double bB2 = B2(digits), bB1 = B1(digits, bB2);
+		double err = 1e100;
+		while (true)
+		{
+			const double nB2 = B2(digits, bB1, bB2);
+			const double nB1 = B1(digits, nB2);
+			const double e = (fabs(nB2 - bB2) / bB2) * (fabs(nB1 - bB1) / bB1);
+			if (e > err) break;
+			err = e; bB2 = nB2; bB1 = nB1;
+		}
+		rB2 = bB2; rB1 = bB1;
+		const double logP = (digits - 1) * log(10.0) + log(5);
+		const double alpha = log(rB2) / logP, beta = log(rB1) / logP;
+		const double g = G(alpha, beta);
+		n = std::lrint(1 / g);
 	}
 };
