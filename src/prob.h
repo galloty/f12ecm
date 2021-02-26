@@ -140,7 +140,7 @@ public:
 		return 0.5 * (B2_min + B2_max);
 	}
 
-	double B1(const int digits, const double B2) const
+	double B1(const int digits, const double B2, const double K) const
 	{
 		const double logP = (digits - 1) * log(10.0) + log(5), eps = 1e-9;
 		const double logB2 = log(B2), alpha = logB2 / logP;
@@ -149,16 +149,16 @@ public:
 		{
 			const double B1 = std::sqrt(B1_min * B1_max);
 			const double B1_m = B1 * (1 - eps), logB1_m = log(B1_m);
-			const double f_m = G(alpha, logB1_m / logP) / (B1_m + B2 / logB2);
+			const double f_m = G(alpha, logB1_m / logP) / (K * B1_m + B2 / logB2);
 			const double B1_p = B1 * (1 + eps), logB1_p = log(B1_p);
-			const double f_p = G(alpha, logB1_p / logP) / (B1_p + B2 / logB2);
+			const double f_p = G(alpha, logB1_p / logP) / (K * B1_p + B2 / logB2);
 			if (f_p > f_m) B1_min = B1; else B1_max = B1;
 			if (fabs(B1_max - B1_min) / B1_max < eps) break;
 		}
 		return 0.5 * (B1_min + B1_max);
 	}
 
-	double B2(const int digits, const double B1, const double B2_0) const
+	double B2(const int digits, const double B1, const double B2_0, const double K) const
 	{
 		const double logP = (digits - 1) * log(10.0) + log(5), eps = 1e-9;
 		const double beta = log(B1) / logP;
@@ -167,23 +167,23 @@ public:
 		{
 			const double B2 = 0.5 * (B2_min + B2_max);
 			const double B2_m = B2 * (1 - eps), logB2_m = log(B2_m);
-			const double f_m = G(logB2_m / logP, beta) / (B1 + B2_m / logB2_m);
+			const double f_m = G(logB2_m / logP, beta) / (K * B1 + B2_m / logB2_m);
 			const double B2_p = B2 * (1 + eps), logB2_p = log(B2_p);
-			const double f_p = G(logB2_p / logP, beta) / (B1 + B2_p / logB2_p);
+			const double f_p = G(logB2_p / logP, beta) / (K * B1 + B2_p / logB2_p);
 			if (f_p > f_m) B2_min = B2; else B2_max = B2;
 			if (fabs(B2_max - B2_min) / B2_max < eps) break;
 		}
 		return 0.5 * (B2_min + B2_max);
 	}
 
-	void B12(const int digits, double & rB1, double & rB2, int & n) const
+	void B12(const int digits, double & rB1, double & rB2, int & n, const double K) const
 	{
-		double bB2 = B2(digits), bB1 = B1(digits, bB2);
+		double bB2 = B2(digits), bB1 = B1(digits, bB2, K);
 		double err = 1e100;
 		while (true)
 		{
-			const double nB2 = B2(digits, bB1, bB2);
-			const double nB1 = B1(digits, nB2);
+			const double nB2 = B2(digits, bB1, bB2, K);
+			const double nB1 = B1(digits, nB2, K);
 			const double e = (fabs(nB2 - bB2) / bB2) * (fabs(nB1 - bB1) / bB1);
 			if (e > err) break;
 			err = e; bB2 = nB2; bB1 = nB1;
