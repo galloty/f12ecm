@@ -8,6 +8,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <cstdint>
 #include <cmath>
 #include <vector>
+#include <fstream>
 
 class Prob
 {
@@ -123,10 +124,10 @@ public:
 
 	double G(const double alpha, const double beta) const { return (beta < alpha) ? sigma(1 / alpha, 1 / beta) : F1(alpha); }
 
-	double B2(const int digits) const
+	double B2(const double logP) const
 	{
-		const double logP = (digits - 1) * log(10.0) + log(5), eps = 1e-9;
-		double B2_min = 100, B2_max = 1e15;
+		const double eps = 1e-9;
+		double B2_min = 10, B2_max = 1e15;
 		while (true)
 		{
 			const double B2 = std::sqrt(B2_min * B2_max);
@@ -140,11 +141,11 @@ public:
 		return 0.5 * (B2_min + B2_max);
 	}
 
-	double B1(const int digits, const double B2, const double K) const
+	double B1(const double logP, const double K, const double B2) const
 	{
-		const double logP = (digits - 1) * log(10.0) + log(5), eps = 1e-9;
+		const double eps = 1e-9;
 		const double logB2 = log(B2), alpha = logB2 / logP;
-		double B1_min = B2 / 1000, B1_max = B2;
+		double B1_min = B2 / 100, B1_max = B2;
 		while (true)
 		{
 			const double B1 = std::sqrt(B1_min * B1_max);
@@ -158,14 +159,14 @@ public:
 		return 0.5 * (B1_min + B1_max);
 	}
 
-	double B2(const int digits, const double B1, const double B2_0, const double K) const
+	double B2(const double logP, const double K, const double B1, const double B2_0) const
 	{
-		const double logP = (digits - 1) * log(10.0) + log(5), eps = 1e-9;
+		const double eps = 1e-9;
 		const double beta = log(B1) / logP;
-		double B2_min = 0.5 * B2_0, B2_max = 2 * B2_0;
+		double B2_min = 0.25 * B2_0, B2_max = 4 * B2_0;
 		while (true)
 		{
-			const double B2 = 0.5 * (B2_min + B2_max);
+			const double B2 = std::sqrt(B2_min * B2_max);
 			const double B2_m = B2 * (1 - eps), logB2_m = log(B2_m);
 			const double f_m = G(logB2_m / logP, beta) / (K * B1 + B2_m / logB2_m);
 			const double B2_p = B2 * (1 + eps), logB2_p = log(B2_p);
@@ -176,22 +177,55 @@ public:
 		return 0.5 * (B2_min + B2_max);
 	}
 
-	void B12(const int digits, double & rB1, double & rB2, int & n, const double K) const
+	void B12(const double logP, const double K, double & rB1, double & rB2, double & n_curves) const
 	{
-		double bB2 = B2(digits), bB1 = B1(digits, bB2, K);
+		double bB2 = B2(logP), bB1 = B1(logP, K, bB2);
 		double err = 1e100;
 		while (true)
 		{
-			const double nB2 = B2(digits, bB1, bB2, K);
-			const double nB1 = B1(digits, nB2, K);
+			const double nB2 = B2(logP, K, bB1, bB2);
+			const double nB1 = B1(logP, K, nB2);
 			const double e = (fabs(nB2 - bB2) / bB2) * (fabs(nB1 - bB1) / bB1);
 			if (e > err) break;
 			err = e; bB2 = nB2; bB1 = nB1;
 		}
 		rB2 = bB2; rB1 = bB1;
-		const double logP = (digits - 1) * log(10.0) + log(5);
 		const double alpha = log(rB2) / logP, beta = log(rB1) / logP;
 		const double g = G(alpha, beta);
-		n = std::lrint(1 / g);
+		n_curves = 1 / g;
+	}
+
+	void gen_opt()
+	{
+		const double K = 5.6;
+		const size_t min_logP = 18, max_logP = 270;
+
+		double B1[max_logP], B2[max_logP], n[max_logP];
+
+		for (size_t logp = min_logP; logp < max_logP; ++logp)
+		{
+			B12(logp, K, B1[logp], B2[logp], n[logp]);
+			std::cout << logp << " " << B2[logp] << " " << B1[logp] << " " << B2[logp]/B1[logp] << " " << n[logp] << std::endl;
+		}
+
+		std::ofstream file("_opt.h");
+		if (file.is_open())
+		{
+			file << "#include <cstdint>" << std::endl << std::endl << "namespace ECM_opt" << std::endl << "{" << std::endl;
+			file << "\tconst size_t size = " << max_logP << ";" << std::endl;
+			file << "\tconst size_t min = " << min_logP << ";" << std::endl << std::endl;
+
+			file << "\tuint64_t B2[size] = {" << std::endl << "\t\t0";
+			for (size_t logP = 1; logP < min_logP; ++logP) file << ", 0";
+			for (size_t logP = min_logP; logP < max_logP; ++logP) file << ", " << std::llrint(B2[logP]);
+			file << " };" << std::endl << "\tuint64_t B1[size] = {" << std::endl << "\t\t0";
+			for (size_t logP = 1; logP < min_logP; ++logP) file << ", 0";
+			for (size_t logP = min_logP; logP < max_logP; ++logP) file << ", " << std::llrint(B1[logP]);
+			file << " };" << std::endl << "\tuint64_t n[size] = {" << std::endl << "\t\t0";
+			for (size_t logP = 1; logP < min_logP; ++logP) file << ", 0";
+			for (size_t logP = min_logP; logP < max_logP; ++logP) file << ", " << uint64_t(n[logP]) + 1;
+			file << " };" << std::endl << "}" << std::endl;
+		}
+		file.close();
 	}
 };
