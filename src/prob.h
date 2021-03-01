@@ -10,6 +10,8 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <vector>
 #include <fstream>
 
+#include "opt.h"
+
 class Prob
 {
 public:
@@ -195,7 +197,7 @@ public:
 		n_curves = 1 / g;
 	}
 
-	void gen_opt()
+	void gen_opt() const
 	{
 		const double K = 5.6;
 		const size_t min_logP = 18, max_logP = 270;
@@ -227,5 +229,26 @@ public:
 			file << " };" << std::endl << "}" << std::endl;
 		}
 		file.close();
+	}
+
+	void get_opt(const size_t n, double & logp, uint64_t & B1, uint64_t & B2) const
+	{
+		double nc[ECM_opt::size];
+		for (size_t logP = ECM_opt::min; logP < ECM_opt::size; ++logP)
+		{
+			double np = ECM_opt::n[ECM_opt::min];
+			for (size_t logp = ECM_opt::min + 1; logp <= logP; ++logp)
+			{
+				np += ECM_opt::n[logp] - 0.92 * ECM_opt::n[logp - 1];	// magic number to get probability ~ 1 - 1/e
+			}
+			nc[logP] = np;
+		}
+
+		size_t lgp = ECM_opt::min; for (; lgp < ECM_opt::size; ++lgp) if (nc[lgp] > n) break;
+		// nc[lgp - 1] <= n < nc[lgp]
+		const double delta = (n - nc[lgp - 1]) / (nc[lgp] - nc[lgp - 1]);
+		logp = lgp - 1 + delta;
+		B1 = ECM_opt::B1[lgp - 1] + std::llrint(delta * (ECM_opt::B1[lgp] - ECM_opt::B1[lgp - 1]));
+		B2 = ECM_opt::B2[lgp - 1] + std::llrint(delta * (ECM_opt::B2[lgp] - ECM_opt::B2[lgp - 1]));
 	}
 };

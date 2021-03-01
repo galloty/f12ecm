@@ -248,14 +248,13 @@ The differential equation is $t\, \rho'_k(t) = -\rho_k(t - 1) + \rho_{k-1}(t - 1
 Integrating by parts, we get
 $$\rho_k(u) = \frac{1}{u} \left( \int_{u-1}^u \rho_k(t)\, dt + \int_0^{u-1} \rho_{k-1}(t)\, dt \right).$$
 This relation can be used for the numerical computation of $\rho_2$.
+\newpage
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=15.5cm, angle=0]{img/F_12.pdf}
+	\includegraphics[width=15.5cm, angle=0]{img/F1_F2.png}
 	\caption{\label{fig:F_12} $F(\alpha)$ and $F_2(\alpha)$.}
 \end{figure}
-
-\newpage
 
 The sizes of the two largest prime factors are correlated: let $n \approx 10^{100}$
 and $p \approx 10^{30}$ be the largest prime factor of $n$. We have $\alpha = 0.3$
@@ -294,30 +293,31 @@ and $n = 1 / P(B_2)$.
 
 \begin{figure}[!h]
 	\centering
-	\includegraphics[width=15.5cm, angle=0]{img/cond_max.pdf}
+	\includegraphics[width=15.5cm, angle=0]{img/cond_max.png}
 	\caption{\label{fig:max} $P(B_2) \log B_2 /\, B_2$ for $p = 5\cdot10^{49}$.}
 \end{figure}
 
 Let $p = 5\cdot10^{49}$ be an average 50-digit prime.
-$P(B_2) \log B_2 /\, B_2$ is maximum at $B_2 \approx 190\cdot 10^6$.\\
+$P(B_2) \log B_2 /\, B_2$ is maximum at $B_2 \approx 1.9\cdot 10^8$.\\
 We have $P(B_2) \approx 1.95\cdot 10^{-5}$ and $n \approx 51400$.
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=15.5cm, angle=0]{img/n_curves.pdf}
-	\caption{\label{fig:p_n} Probability of success for $n$ curves, $p = 5\cdot10^{49}$ and $B_2 = 190\cdot 10^6$.}
-\end{figure}
-
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=15.5cm, angle=0]{img/prob_digits.pdf}
-	\caption{\label{fig:p_dgt} Chance to find a $x$-digit factor, $B_2 = 190\cdot 10^6$ and $n = 51400$.}
+	\includegraphics[width=15.5cm, angle=0]{img/n_curves.png}
+	\caption{\label{fig:p_n} Probability of success for $n$ curves, $p = 5\cdot10^{49}$ and $B_2 = 1.9\cdot 10^8$.}
 \end{figure}
 
 \begin{figure}[!ht]
 	\vspace*{1cm}
 	\centering
-	\includegraphics[width=15.5cm, angle=0]{img/B2_n_digits.pdf}
+	\includegraphics[width=15.5cm, angle=0]{img/prob_digits.png}
+	\caption{\label{fig:p_dgt} Chance to find a $x$-digit factor, $B_2 = 190\cdot 10^6$ and $n = 51400$.}
+\end{figure}
+
+\begin{figure}[!ht]
+	\vspace*{2cm}
+	\centering
+	\includegraphics[width=15.5cm, angle=0]{img/B2_n_digits.png}
 	\caption{\label{fig:B2_dgt} Optimal $B_2$ and number of curves as a function of the number of digits.}
 \end{figure}
 
@@ -352,7 +352,7 @@ $$\frac{P(B_2, B_1)}{K\cdot B_1 + B_2 / \log B_2}.$$
 \begin{figure}[!ht]
 	\vspace*{-0.5cm}
 	\centering
-	\includegraphics[width=14.5cm, angle=0]{img/B1_B2_n_digits.pdf}
+	\includegraphics[width=15.5cm, angle=0]{img/B1_B2_n_digits.png}
 	\caption{\label{fig:B12_dgt} Optimal $B_2, B_1$ and number of curves as a function of the number of digits.}
 \end{figure}
 
@@ -362,27 +362,47 @@ The present status is
 $$F_{12} = P_6 \:\cdot\: P_8 \:\cdot\: P_8 \:\cdot\: P_{12} \:\cdot\: P_{16} \:\cdot P_{54}
 \:\cdot\: C_{1133}.$$
 The size of the next prime factor is unknown and we can't set $B_1$ and $B_2$ as a function
-of its number of digits. The number of curves needed to find a new factor is unknown but $n$
+of its number of digits. The number of curves needed to find a new factor is unknown but it
 is a variable that will increase over time. We can set the searched prime factor as a function
-of $n$.
+of the index of the curve.
 
-%If $P(k)$ the probability of success at the $k^{\text{th}}$ curve, we can compute
-%$k \mapsto p(k) \mapsto B_1(k),\, B_2(k) \mapsto P(k)$.
-%and the likelihood of success for ECM with $n$ curves is
-%$\mathcal{P}(n) = 1 - \prod_{k = 1}^n \left(1 - P(k) \right)$.
+The number of digits, $B_1$ and $B_2$ can be computed as a function of number of curves
+with \autoref{chap:ratio_B2_B1}. But now we don't check $n$ curves with a fixed set of
+parameters but the $i^\text{th}$ curve is tested with different settings
+$B_1(i)$ and $B_2(i)$.
+
+However \autoref{chap:ratio_B2_B1} can be the starting point. For integer values of $\log p$,
+$n(\lfloor\log p\rfloor)$ is calculated. If $n$ curves are tested for each value of
+$\lfloor\log p\rfloor$, the probability of success is larger than $1 - e^{-1}$ because
+$n(\lfloor\log p\rfloor - 1), n(\lfloor\log p\rfloor - 2), \ldots$ have already been tested.
+If $n(\lfloor\log p\rfloor) - n(\lfloor\log p\rfloor - 1)$ curves are tested then
+the probability is smaller than $1 - e^{-1}$ because
+$B_1(\lfloor\log p\rfloor - 1) < B_1(\lfloor\log p\rfloor)$ and
+$B_2(\lfloor\log p\rfloor - 1) < B_2(\lfloor\log p\rfloor)$.
+
+We search for $\lambda$ such that if
+$n'(\lfloor\log p\rfloor) = n(\lfloor\log p\rfloor) - \lambda \cdot n(\lfloor\log p\rfloor - 1)$
+then the probability remains constant and equal to $1 - e^{-1}$. $\lambda \approx 0.92$ is
+suitable. By inverting this function, for each index an estimate of $\log p$ is computed and
+then $B_1(\log p)$ and $B_2(\log p)$.
+
+[TODO] Find $B_1 = f(\log p), B_2$. 
 
 \begin{figure}[!ht]
 	\vspace*{0.0cm}
 	\centering
-	\includegraphics[width=14.5cm, angle=0]{img/digits_n.pdf}
-	\caption{\label{fig:dgt_n} Number of digits as a function of the number of curves.}
+	\includegraphics[width=15.5cm, angle=0]{img/digits_n.png}
+	\caption{\label{fig:dgt_n} Expected number of digits as a function of the index of the curve.}
+	\vspace*{1.0cm}
 \end{figure}
+
 \begin{figure}[!ht]
 	\vspace*{0.0cm}
 	\centering
-	\includegraphics[width=14.5cm, angle=0]{img/B1_B2_n.pdf}
-	\caption{\label{fig:B12_n} $B_2$ and $B_1$ as a function of the number of curves.}
+	\includegraphics[width=15.5cm, angle=0]{img/B1_B2_n.png}
+	\caption{\label{fig:B12_n} $B_2$ and $B_1$ as a function of the index of the curve.}
 \end{figure}
+
 
 \subsection{Test of the probabilistic model}
 
