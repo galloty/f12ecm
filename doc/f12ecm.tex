@@ -386,10 +386,9 @@ then the probability remains constant and equal to $1 - e^{-1}$. $\lambda \appro
 suitable. By inverting this function, for each index an estimate of $\log p$ is computed and
 then $B_1(\log p)$ and $B_2(\log p)$.
 
-[TODO] Find $B_1 = f(\log p), B_2$. 
 
 \begin{figure}[!ht]
-	\vspace*{0.0cm}
+	\vspace*{1.0cm}
 	\centering
 	\includegraphics[width=15.5cm, angle=0]{img/digits_n.png}
 	\caption{\label{fig:dgt_n} Expected number of digits as a function of the index of the curve.}
@@ -403,6 +402,25 @@ then $B_1(\log p)$ and $B_2(\log p)$.
 	\caption{\label{fig:B12_n} $B_2$ and $B_1$ as a function of the index of the curve.}
 \end{figure}
 
+$\log B_2 = f(\log i)$ where $i$ is the $i^\text{th}$ curve is close to a linear function.
+The error of the estimate $B_2 = 400\, i^{\sqrt{2}}$ is less than $5\%$ for
+$10^4 \leq i \leq 10^8$. The ratio of $B_2\, /\, B_1 = 26 + 1.8\, \log{i}$ is always
+slightly larger than the optimal value. Finally we have
+$\log p \approx (3 + 1.3\, \log i)^{5/3}$.
+
+The following parameters are applied: let $i$ be the $i^\text{th}$ curve and $d$ be the
+expected number of digits of the prime factor, then
+\begin{align*} 
+B_2 &= 400\, i^{\sqrt{2}},\\
+B_1 &= B_2\, /\, (26 + 1.8\, \log{i}),\\
+d &= (1.8 + 0.79\, \log i)^{5/3}.
+\end{align*}
+\begin{figure}[!ht]
+	\vspace*{-0.8cm}
+	\centering
+	\includegraphics[width=12.0cm, angle=0]{img/err_B1_B2_digits.png}
+	\caption{\label{fig:B12_n} Relative error with applied parameters as a function of the index of the curve.}
+\end{figure}
 
 \subsection{Test of the probabilistic model}
 
