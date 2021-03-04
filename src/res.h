@@ -53,8 +53,7 @@ public:
 		const size_t r_size = mpz_size(r.get_mpz_t());
 		// if ((r < 0) ||(r_size * sizeof(uint64_t) > 2 * _n * sizeof(uint16_t)))
 		// {
-		// 	std::cout << mpz_class((mpz_class(1) << (1 << 12)) + 1).get_str() << std::endl << r.get_str() << std::endl;
-		// 	throw;
+		// 	throw std::runtime_error("set_z");
 		// }
 
 		uint16_t s[2 * _n];
@@ -132,27 +131,37 @@ public:
 		this->norm(_z, _n);
 	}
 
-	void mul(const Res & x)
+	void to_multiplier()
 	{
-		VComplex r_z[_n];
-		for (size_t k = 0; k < _n; ++k) r_z[k] = x._z[k];
-
 		const Complex * const w123 = mainPool.w123;
 
 		this->forward4_0(_n / 4, _z);
-		this->forward4_0(_n / 4, r_z);
 		for (size_t j = 0; j < 4; ++j)
 		{
 			VComplex * const z = &_z[j * _n / 4];
-			VComplex * const zr = &r_z[j * _n / 4];
+
+			const Complex * const w = &w123[3 * (4 + j)];
+			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
+			this->forward4(8, z, w);
+			for (size_t i = 0; i < 4; ++i) this->forward4(2, &z[8 * i], &w4[3 * i]);
+		}
+	}
+
+	void mul_m(const Res & x)
+	{
+		const Complex * const w123 = mainPool.w123;
+
+		this->forward4_0(_n / 4, _z);
+		for (size_t j = 0; j < 4; ++j)
+		{
+			VComplex * const z = &_z[j * _n / 4];
+			const VComplex * const zr = &x._z[j * _n / 4];
 
 			const Complex * const w = &w123[3 * (4 + j)];
 			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
 			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
 			this->forward4(8, z, w);
-			this->forward4(8, zr, w);
 			for (size_t i = 0; i < 4; ++i) this->forward4(2, &z[8 * i], &w4[3 * i]);
-			for (size_t i = 0; i < 4; ++i) this->forward4(2, &zr[8 * i], &w4[3 * i]);
 			for (size_t i = 0; i < 4; ++i) this->mul2(&z[8 * i], &zr[8 * i], ws[3 * 2 * i]);
 			for (size_t i = 0; i < 4; ++i) this->backward4(2, &z[8 * i], &w4[3 * i]);
 			this->backward4(8, z, w);
@@ -162,8 +171,24 @@ public:
 		this->norm(_z, _n);
 	}
 
-	void mul(const Res & x, const Res & y)
+	void mul_mm(const Res & x)
 	{
-		set(x); mul(y);
+		const Complex * const w123 = mainPool.w123;
+
+		for (size_t j = 0; j < 4; ++j)
+		{
+			VComplex * const z = &_z[j * _n / 4];
+			const VComplex * const zr = &x._z[j * _n / 4];
+
+			const Complex * const w = &w123[3 * (4 + j)];
+			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
+			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
+			for (size_t i = 0; i < 4; ++i) this->mul2(&z[8 * i], &zr[8 * i], ws[3 * 2 * i]);
+			for (size_t i = 0; i < 4; ++i) this->backward4(2, &z[8 * i], &w4[3 * i]);
+			this->backward4(8, z, w);
+		}
+		this->backward4_0(_n / 4, _z);
+
+		this->norm(_z, _n);
 	}
 };

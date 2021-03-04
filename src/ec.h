@@ -33,12 +33,17 @@ public:
 		void set(const size_t i, const mpz_class & x, const mpz_class & z) { _x.set_z(i, x); _z.set_z(i, z); }
 		void set(const Point & P) { _x.set(P._x); _z.set(P._z); }
 		void swap(Point & P) { _x.swap(P._x); _z.swap(P._z); }
+
 		void addsub() { Res<VComplex>::addsub(_x, _z); }
 		void addsub(const Point & P) { _x.add(P._x, P._z); _z.sub(P._x, P._z); }
+
 		void sqr() { _x.sqr(); _z.sqr(); }
-		void vmul(const Point & P) { _x.mul(_z); _z.mul(P._x, P._z); }
-		void cross(const Point & P) { _x.mul(P._z); _z.mul(P._x); }
-		void mulc_xz(const Point & P, const Res<VComplex> & C, Res<VComplex> & t) { _x.sub(P._x, P._z); t.mul(C, _x); _z.add(P._z, t); }
+		void to_multiplier() { _x.to_multiplier(); _z.to_multiplier(); }
+		void cross(const Point & P) { _x.mul_m(P._z); _z.mul_m(P._x); }
+		void mul_mm(const Point & P) { _x.mul_mm(P._x); _z.mul_mm(P._z); }
+
+		void vmul(Point & P) { _z.to_multiplier(); _x.mul_m(_z); _z.set(P._x); P._z.to_multiplier(); _z.mul_m(P._z); }
+		void mulc_xz(const Point & P, const Res<VComplex> & C, Res<VComplex> & t) { t.sub(P._x, P._z); _x.set(t); t.mul_m(C); _z.add(P._z, t); }
 	};
 
 private:
@@ -60,23 +65,30 @@ private:
 	{
 		P1.addsub();
 		_T.addsub(P2);
+		_T.to_multiplier();
 		P1.cross(_T);
 		P1.addsub();
 		P1.sqr();
-		P1.cross(Pm);
+		_T.set(Pm);
+		_T.to_multiplier();
+		P1.cross(_T);
 	}
 
-	void sum_dbl(Point & P1, Point & P2, const Point & Pm)
+	void sum_dbl(Point & P1, Point & P2, const Point & Pm)	// 28 transforms ~ 14 squares
 	{
 		P1.addsub();
 		P2.addsub();
-		P1.cross(P2);
+		_T.set(P2);
+		_T.to_multiplier();		// 2 transforms
+		P1.cross(_T);			// 4 transforms
 		P1.addsub();
-		P1.sqr();
-		P1.cross(Pm);
-		P2.sqr();
-		_T.mulc_xz(P2, _C, _t);
-		P2.vmul(_T);
+		P1.sqr();				// 4 transforms
+		_T.set(Pm);
+		_T.to_multiplier();		// 2 transforms
+		P1.cross(_T);			// 4 transforms
+		P2.sqr();				// 4 transforms
+		_T.mulc_xz(P2, _C, _t);	// 2 transforms
+		P2.vmul(_T);			// 6 transforms
 	}
 
 public:
@@ -86,6 +98,7 @@ public:
 	{
 		mpz_class t; mpz_invert(t.get_mpz_t(), mpz_class(4).get_mpz_t(), n.get_mpz_t());
 		_C.set_z(i, ((A + 2) * t) % n);
+		_C.to_multiplier();
 	}
 
 	void dbl(Point & Po, const Point & P) { Po.set(P); dbl(Po); }

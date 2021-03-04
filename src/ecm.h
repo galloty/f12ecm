@@ -128,10 +128,9 @@ private:
 		typename EC<VComplex>::Point P(thread_index);
 
 		typename EC<VComplex>::Point S[D]; for (size_t i = 0; i < D; ++i) S[i].init(thread_index);
-		Res<VComplex> beta[D]; for (size_t i = 0; i < D; ++i) beta[i].init(thread_index);
 
-		typename EC<VComplex>::Point T(thread_index), R(thread_index);;
-		Res<VComplex> g(thread_index), alpha(thread_index), t1(thread_index), t2(thread_index);
+		typename EC<VComplex>::Point Se(thread_index), T(thread_index), R(thread_index), Rm(thread_index);
+		Res<VComplex> g(thread_index), t1(thread_index), t2(thread_index);
 
 		PseudoPrmGen prmGen;
 
@@ -176,8 +175,8 @@ private:
 
 			ec.dbl(S[0], P); ec.dbl(S[1], S[0]);
 			for (size_t d = 2; d < D; ++d) ec.sum(S[d], S[d - 1], S[0], S[d - 2]);
-
-			for (size_t d = 0; d < D; ++d) beta[d].mul(S[d].x(), S[d].z());
+			Se.set(S[D - 1]);
+			for (size_t d = 0; d < D; ++d) S[d].to_multiplier();
 
 			const uint64_t r_min = p - 2;
 			ec.mul(T, P, r_min - 2 * D), ec.mul(R, P, r_min);
@@ -186,17 +185,18 @@ private:
 
 			for (uint64_t r = r_min; r < B2; r += 2 * D)
 			{
-				alpha.mul(R.x(), R.z());
+				Rm.set(R); Rm.to_multiplier();
 
 				for (; p <= r + 2 * D; p = prmGen.next())
 				{
 					const size_t delta = (p - r) / 2 - 1;
-					t1.sub(R.x(), S[delta].x()); t2.add(R.z(), S[delta].z());
-					t1.mul(t2); t1.sub(t1, alpha); t1.add(t1, beta[delta]);
-					g.mul(t1);
+					t1.set(Rm.x()); t1.mul_mm(S[delta].z());
+					t2.set(Rm.z()); t2.mul_mm(S[delta].x());
+					t1.sub(t1, t2); t1.to_multiplier();
+					g.mul_m(t1);
 				}
 
-				ec.sum(T, R, S[D - 1], T);
+				ec.sum(T, R, Se, T);
 				T.swap(R);
 				if (_quit) break;
 

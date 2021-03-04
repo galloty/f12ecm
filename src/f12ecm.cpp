@@ -7,6 +7,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 
 #include <cstdint>
 #include <cstdlib>
+#include <stdexcept>
 #include <string>
 #include <random>
 #include <iostream>
@@ -122,8 +123,8 @@ public:
 		std::random_device rd; std::uniform_int_distribution<uint64_t> dist(6, uint64_t(-1));
 
 		size_t thread_count = 3;
-		uint64_t B1 = 1000000, B2 = 0;
-		uint64_t sigma_0 = dist(rd);
+		uint64_t B1 = 1000000, B2 = 0;	// 10000000
+		uint64_t sigma_0 = dist(rd);	// 16414
 
 		// parse args
 		for (size_t i = 0, size = args.size(); i < size; ++i)
