@@ -8,6 +8,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #pragma once
 
 #include "res.h"
+#include "prac.h"
 
 // Montgomery curve: B y^2 = x^3 + A x^2 + x
 template<typename VComplex>
@@ -52,7 +53,7 @@ private:
 
 public:
 	// Pr = P + P
-	void dbl(Point & Pr, const Point & P)	// 2 mul + 2 sqr + 1 mul_const
+	void dbl(Point & Pr, const Point & P)	// 2 mul + 2 sqr + 1 mul_const: 12 transforms
 	{
 		Pr.addsub(P);				// P'.x = P.x + P.z, P'.z = P.x - P.z
 		Pr.sqr();					// P'.x = (P.x + P.z)^2, P'.z = (P.x - P.z)^2
@@ -61,7 +62,7 @@ public:
 	}
 
 	// Pr = P1 + P2, where P1 != P2 and Pm = P1 - P2 or Pm = P2 - P1
-	void add(Point & Pr, const Point & P1, const Point & P2, const Point & Pm)	// 4 mul + 2 sqr
+	void add(Point & Pr, const Point & P1, const Point & P2, const Point & Pm)	// 4 mul + 2 sqr: 16 transforms
 	{
 		// Pr.set(Pm); return;
 		_T.addsub(P2);				// T.x = P2.x + P2.z, T.z = P2.x - P2.z
@@ -90,12 +91,27 @@ public:
 	// PRAC algorithm: Montgomery, Peter L. (1983). "Evaluating recurrences of form X_{m+n} = f(X_m, X_n, X_{m-n}) via Lucas Chains", unpublished.
 	void mul(Point & Pr, const Point & P, const uint64_t n, const uint64_t p = 0)	// n >= 3, p | n
 	{
+		const double phi = 1.6180339887498948482045868343656381177;
+		const double alpha[10] = { 1 / phi, 5 / (phi + 7), 1429 / (phi + 2311), 3739 / (6051 - phi), 79 / (129 - phi),
+								   31 / (phi + 49), 209 / (phi + 337), 11 / (19 - phi), 545 / (883 - phi), 1 / (3 - phi) };
+
+		size_t c_min = size_t(-1), best_i = 0;
+		for (size_t i = 0; i < 10; ++i)
+		{
+			size_t sqr_count, mul_count;
+			const size_t c = PRAC::cost(n, p, alpha[i], sqr_count, mul_count);
+			if (c < c_min)
+			{
+				c_min = c; best_i = i;
+			}
+		}
+
 		_A.set(P);
 		uint64_t d = n;
 
 		while (d != 1)
 		{
-			const uint64_t r = (p == 0) ? std::llrint(d * ((std::sqrt(5) - 1) / 2)) : (d / p) * std::llrint(p * ((std::sqrt(5) - 1) / 2));
+			const uint64_t r = (p == 0) ? std::llrint(d * alpha[best_i]) : (d / p) * std::llrint(p * alpha[best_i]);
 			uint64_t e = 2 * r - d; d -= r;
 			_B.set(_A); _C.set(_A); dbl(_A, _A);
 

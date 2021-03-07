@@ -151,7 +151,7 @@ private:
 			uint64_t p = prmGen.first(), disp = 100000;
 			for (p = prmGen.next(); p <= B1; p = prmGen.next())
 			{
-				uint64_t m = p; while (m * p <= B1) m *= p;
+				uint64_t m = p; while (m * double(p) <= B1) m *= p;
 				ec.mul(P, P, m, p);
 				if (_quit) break;
 				if ((thread_index == 0) && (p > disp))
