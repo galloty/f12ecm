@@ -9,6 +9,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <cmath>
 #include <vector>
 #include <fstream>
+#include <iostream>
 
 #include "opt.h"
 

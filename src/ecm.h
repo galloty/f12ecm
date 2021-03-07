@@ -146,11 +146,13 @@ private:
 				ec.set(i, A, F_12);
 			}
 
+			for (size_t i = 0; i < 64; ++i) ec.dbl(P, P);
+
 			uint64_t p = prmGen.first(), disp = 100000;
-			for (; p <= B1; p = prmGen.next())
+			for (p = prmGen.next(); p <= B1; p = prmGen.next())
 			{
 				uint64_t m = p; while (m * p <= B1) m *= p;
-				ec.mul(P, P, m);
+				ec.mul(P, P, m, p);
 				if (_quit) break;
 				if ((thread_index == 0) && (p > disp))
 				{
@@ -174,7 +176,7 @@ private:
 			if (!sol1.empty()) output(1, sol1, std::lrint(dt1.count()));
 
 			ec.dbl(S[0], P); ec.dbl(S[1], S[0]);
-			for (size_t d = 2; d < D; ++d) ec.sum(S[d], S[d - 1], S[0], S[d - 2]);
+			for (size_t d = 2; d < D; ++d) ec.add(S[d], S[d - 1], S[0], S[d - 2]);
 			Se.set(S[D - 1]);
 			for (size_t d = 0; d < D; ++d) S[d].to_multiplier();
 
@@ -196,7 +198,7 @@ private:
 					g.mul_m(t1);
 				}
 
-				ec.sum(T, R, Se, T);
+				ec.add(T, R, Se, T);
 				T.swap(R);
 				if (_quit) break;
 
