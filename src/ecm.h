@@ -30,6 +30,61 @@ inline mpz_class mpz(const uint64_t n)
 	return z;
 }
 
+// Montgomery construction: Daniel J. Bernstein; Tanja Lange; Peter Birkner; Christiane Peters, ECM using Edwards curves, § 7.7
+class EC_mc
+{
+public:
+	struct Point
+	{
+		mpz_class x, y;
+	};
+
+private:
+	static Point add(const Point & p1, const Point & p2, const mpz_class & m)
+	{
+		mpz_class lambda, den;
+		if (p1.x != p2.x)
+		{
+			lambda = p1.y - p2.y;
+			den = p1.x - p2.x;
+		}
+		else
+		{
+			lambda = 3 * p1.x * p1.x - 12;
+			den = 2 * p1.y;
+		}
+		mpz_invert(den.get_mpz_t(), den.get_mpz_t(), m.get_mpz_t());
+		lambda = (lambda * den) % m;
+
+		Point p3;
+		p3.x = (lambda * lambda - p1.x - p2.x) % m;
+		p3.y = (m - (lambda * (p3.x - p1.x) + p1.y)) % m;
+		if (p3.x < 0) p3.x += m;
+		if (p3.y < 0) p3.y += m;
+		return p3;
+	}
+
+public:
+	// (s, t) = n * [-2, 4] on y^2 = x^3 − 12*x (modulo m)
+	static Point get(const uint64_t n, const mpz_class & m)
+	{
+		bool s = false;
+		Point p0; p0.x = m - 2; p0.y = 4;
+		Point p = p0;
+		for (int b = 63; b >= 0; --b)
+		{
+			if (s) p = add(p, p, m);
+
+			if ((n & (uint64_t(1) << b)) != 0)
+			{
+				if (s) p = add(p, p0, m);
+				s = true;
+			}
+		}
+		return p;
+	}
+};
+
 template<typename VComplex>
 class ECM
 {
@@ -70,6 +125,7 @@ private:
 		return ::gcd(t, n);
 	}
 
+	static mpz_class sqr_mod(const mpz_class & x, const mpz_class & n) { return (x * x) % n; }
 	static mpz_class cub_mod(const mpz_class & x, const mpz_class & n) { mpz_class t = (x * x * x) % n; if (t < 0) t += n; return t; }
 
 	// A such that the group order is divisible by 12 (H. Suyama)
@@ -84,6 +140,48 @@ private:
 		t = (t * cub_mod(v - u, n) * (3 * u + v)) % n;
 		t -= 2; if (t < 0) t += n;
 		return t;
+	}
+
+	// Montgomery construction of Edwards curve: the group order is divisible by 12
+	static mpz_class A_Ed(const size_t i, const uint64_t sigma, const mpz_class & n, typename EC<VComplex>::Point & P0)
+	{
+		// (s, t) = sigma * [-2, 4] on y^2 = x^3 − 12*x (modulo n)
+		const EC_mc::Point P = EC_mc::get(sigma, n);
+		const mpz_class s = P.x, t = P.y;
+
+		// Edwards curve
+		const mpz_class s2 = sqr_mod(s, n), t2 = sqr_mod(t, n);
+		const mpz_class a = s2 - 12 * s - 12, b = ((s - 2) * (s + 6)) % n;
+		mpz_class den;
+
+		den = (1024 * s2 * t2) % n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		mpz_class d = (-a * cub_mod(b, n) * den) % n;
+		if (d < 0) d += n;
+
+		den = (b * (s2 + 12 * s - 12)) % n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		mpz_class x = (8 * t * (s2 + 12) * den) % n;
+		if (x < 0) x += n;
+
+		den = (b * (s2 - 12)) % n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		mpz_class y = (-4 * s * a * den);
+		if (y < 0) y += n;
+
+		// Montgomery curve
+		den = 1 - d; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		const mpz_class c = 2 * den;
+		mpz_class A = ((1 + d) * c) % n;
+		if (A < 0) A += n;
+		mpz_class B = (2 * c) % n;
+		if (B < 0) B += n;
+		den = 1 - y; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		mpz_class X = ((1 + y) * den) % n;
+		if (X < 0) X += n;
+		den = x; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		mpz_class Y = X * den;
+		if (Y < 0) Y += n;
+
+		P0.set(i, X, mpz_class(1));
+		return A;
 	}
 
 	void output(const int stage, const std::vector<std::pair<uint64_t, mpz_class>> & sol, const long time)
@@ -145,6 +243,7 @@ private:
 				const mpz_class A = A_12(i, sigma + i, F_12, P);
 				ec.set(i, A, F_12);
 			}
+			ec.init();
 
 			for (size_t i = 0; i < 64; ++i) ec.dbl(P, P);
 

@@ -63,7 +63,7 @@ public:
 			const uint64_t r_k = r_ptr[k];
 			for (size_t j = 0; j < 4; ++j) s[4 * k + j] = uint16_t(r_k >> (16 * j));
 		}
-		for (size_t k = 4 * r_size; k < 256; ++k) s[k] = 0;
+		for (size_t k = 4 * r_size; k < 2 * _n; ++k) s[k] = 0;
 
 		VComplex * const z = _z;
 		for (size_t k = 0; k < _n; ++k)

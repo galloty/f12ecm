@@ -103,9 +103,11 @@ private:
 		std::ostringstream ss;
 		ss << " Usage: f12ecm [options]  options may be specified in any order" << std::endl;
 		ss << "   -t <n>      number of threads (default: 3)" << std::endl;
-		ss << "   -b <n>      bound of stage 1 (default: B1 = 1000000)" << std::endl;
+		ss << "   -b <n>      bound of stage 1 (default: B1 = 1,000,000)" << std::endl;
 		ss << "   -B <n>      bound of stage 2 (default: B2 = 100*B1)" << std::endl;
+		// ss << "   -m <n>      (s, t) = m * (-2, 4) in the Montgomery construction (default: random)" << std::endl;
 		ss << "   -s <n>      sigma in Montgomery-Suyama-12 EC (default: random)" << std::endl;
+		// ss << "   -c <n>      checking code using B1 = 10,000,000 and sigma = 16414" << std::endl;
 		ss << std::endl;
 		return ss.str();
 	}

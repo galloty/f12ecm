@@ -84,6 +84,10 @@ public:
 	{
 		mpz_class t; mpz_invert(t.get_mpz_t(), mpz_class(4).get_mpz_t(), n.get_mpz_t());
 		_A2_4.set_z(i, ((A + 2) * t) % n);
+	}
+
+	void init()
+	{
 		_A2_4.to_multiplier();
 	}
 
