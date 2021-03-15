@@ -9,10 +9,10 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include "ecm.h"
 #include "Complex4.h"
 
-void ECM_avx::run(const uint64_t B1, const uint64_t B2, const uint64_t sigma_0, const size_t thread_count, const std::string & ext)
+void ECM_avx::run(const uint64_t B1, const uint64_t B2, const uint64_t sigma_0, const bool isEdwards, const size_t thread_count, const std::string & ext)
 {
 	ECM<Complex4> & ecm = ECM<Complex4>::getInstance();
-	ecm.run(B1, B2, sigma_0, thread_count, ext);
+	ecm.run(B1, B2, sigma_0, isEdwards, thread_count, ext);
 }
 
 void ECM_avx::quit()

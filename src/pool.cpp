@@ -30,14 +30,22 @@ void MainPool::init(const size_t D, const size_t vec_size, const size_t thread_c
 		}
 	}
 
-	// ec:
+	// ec_m:
 	//  _A2_4, _t: 2 res: 2
 	//  _A, _B, _C, _T1, _T2, _T, _Tm: 7 points: 14
-	// emc:
+	// ec_e:
+	//  _d, _t: 2 res: 2
+	//  _A, _B, _C, _D, _E: 5 res: 5
+	//  _P0: 1 point: 3
+	// ecm:
+	//  _m:
 	//  P, Se, T, R, Rm: 5 points: 10
 	//  S: D points: 2*D
 	//  g, t1, t2: 3 res: 3
-	_size = vec_size * (256 / 2) * (2 * D + 29);
+	//  _e:
+	//  P: 1 points: 3
+
+	_size = vec_size * (256 / 2) * (2 * D + 42);
 
 	for (size_t i = 0; i < thread_count; ++i)
 	{

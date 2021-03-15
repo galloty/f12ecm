@@ -105,8 +105,8 @@ private:
 		ss << "   -t <n>      number of threads (default: 3)" << std::endl;
 		ss << "   -b <n>      bound of stage 1 (default: B1 = 1,000,000)" << std::endl;
 		ss << "   -B <n>      bound of stage 2 (default: B2 = 100*B1)" << std::endl;
-		// ss << "   -m <n>      (s, t) = m * (-2, 4) in the Montgomery construction (default: random)" << std::endl;
-		ss << "   -s <n>      sigma in Montgomery-Suyama-12 EC (default: random)" << std::endl;
+		ss << "   -m <n>      Edwards curve: (s, t) = m * (-2, 4) in the Montgomery construction (default: random)" << std::endl;
+		ss << "   -s <n>      Montgomery curve: sigma in Suyama construction" << std::endl;
 		// ss << "   -c <n>      checking code using B1 = 10,000,000 and sigma = 16414" << std::endl;
 		ss << std::endl;
 		return ss.str();
@@ -124,9 +124,16 @@ public:
 
 		std::random_device rd; std::uniform_int_distribution<uint64_t> dist(6, uint64_t(-1));
 
+		// size_t thread_count = 1;	//3;
+		// uint64_t B1 = 31*31, B2 = B1;	// 10000000
+		// // uint64_t B1 = 9733667, B2 = 800000000;	// 10000000
+		// uint64_t sigma_0 = 5553475;	//dist(rd);	// 16414
+		// bool isEdwards = true;
+
 		size_t thread_count = 3;
 		uint64_t B1 = 1000000, B2 = 0;	// 10000000
 		uint64_t sigma_0 = dist(rd);	// 16414
+		bool isEdwards = false;
 
 		// parse args
 		for (size_t i = 0, size = args.size(); i < size; ++i)
@@ -148,10 +155,17 @@ public:
 				const std::string B = ((arg == "-B") && (i + 1 < size)) ? args[++i] : arg.substr(2);
 				B2 = std::max(std::atoll(B.c_str()), 1000ll);
 			}
+			else if (arg.substr(0, 2) == "-m")
+			{
+				const std::string s = ((arg == "-m") && (i + 1 < size)) ? args[++i] : arg.substr(2);
+				sigma_0 = std::max(std::atoll(s.c_str()), 2ll);
+				isEdwards = true;
+			}
 			else if (arg.substr(0, 2) == "-s")
 			{
 				const std::string s = ((arg == "-s") && (i + 1 < size)) ? args[++i] : arg.substr(2);
 				sigma_0 = std::max(std::atoll(s.c_str()), 6ll);
+				isEdwards = false;
 			}
 		}
 
@@ -180,7 +194,7 @@ public:
 			_ecm = new ECM_sse4();
 			ext = "sse4";
 		}
-		_ecm->run(B1, B2, sigma_0, thread_count, ext);
+		_ecm->run(B1, B2, sigma_0, isEdwards, thread_count, ext);
 		delete _ecm;
 	}
 };

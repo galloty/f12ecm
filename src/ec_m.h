@@ -12,7 +12,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 
 // Montgomery curve: B y^2 = x^3 + A x^2 + x
 template<typename VComplex>
-class EC
+class EC_m
 {
 public:
 	class Point
@@ -48,6 +48,24 @@ public:
 	};
 
 private:
+	static mpz_class cub_mod(const mpz_class & x, const mpz_class & n) { mpz_class t = (x * x * x) % n; if (t < 0) t += n; return t; }
+
+public:
+	// A such that the group order is divisible by 12 (H. Suyama)
+	static mpz_class A_12(const size_t i, const uint64_t sigma, const mpz_class & n, Point & P0)
+	{
+		const mpz_class s = mpz(sigma);
+		const mpz_class u = s * s - 5, v = 4 * s;
+		const mpz_class x = cub_mod(u, n), z = cub_mod(v, n);
+		P0.set(i, x, z);
+		mpz_class t = 4 * x * v;
+		mpz_invert(t.get_mpz_t(), t.get_mpz_t(), n.get_mpz_t());
+		t = (t * cub_mod(v - u, n) * (3 * u + v)) % n;
+		t -= 2; if (t < 0) t += n;
+		return t;
+	}
+
+private:
 	Res<VComplex> _A2_4, _t;		// _A2_4 = (A + 2) / 4
 	Point _A, _B, _C, _T1, _T2, _T, _Tm;
 
@@ -64,7 +82,6 @@ public:
 	// Pr = P1 + P2, where P1 != P2 and Pm = P1 - P2 or Pm = P2 - P1
 	void add(Point & Pr, const Point & P1, const Point & P2, const Point & Pm)	// 4 mul + 2 sqr: 16 transforms
 	{
-		// Pr.set(Pm); return;
 		_T.addsub(P2);				// T.x = P2.x + P2.z, T.z = P2.x - P2.z
 		_T.to_multiplier();
 		_Tm.set(Pm);
@@ -77,7 +94,7 @@ public:
 	}
 
 public:
-	EC(const size_t thread_index) : _A2_4(thread_index), _t(thread_index),
+	EC_m(const size_t thread_index) : _A2_4(thread_index), _t(thread_index),
 		_A(thread_index), _B(thread_index), _C(thread_index), _T1(thread_index), _T2(thread_index), _T(thread_index), _Tm(thread_index) {}
 
 	void set(const size_t i, const mpz_class & A, const mpz_class & n)

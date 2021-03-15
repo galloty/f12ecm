@@ -12,6 +12,15 @@ Please give feedback to the authors if improvement is realized. It is distribute
 
 #include <gmpxx.h>
 
+inline mpz_class mpz(const uint64_t n)
+{
+	mpz_class z;
+	mp_limb_t * const p_limb = mpz_limbs_write(z.get_mpz_t(), 1);
+	p_limb[0] = n;
+	mpz_limbs_finish(z.get_mpz_t(), 1);
+	return z;
+}
+
 template<typename VComplex>
 class Res : public Transform<VComplex>
 {
@@ -71,6 +80,13 @@ public:
 			z[k].real(i) = double(s[k]);
 			z[k].imag(i) = double(s[k + _n]);
 		}
+	}
+
+	void set1()
+	{
+		VComplex * const z = _z;
+		z[0] = VComplex(1.0, 0.0);
+		for (size_t k = 1; k < _n; ++k) z[k] = VComplex(0.0, 0.0);
 	}
 
 	void set(const Res & x)
