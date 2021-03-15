@@ -106,16 +106,17 @@ struct Transform
 	}
 
 	// -65536 < z[i] < 65536
-	static void norm(VComplex * const z, const size_t m)
+	static void norm(VComplex * const z, const size_t m, const int multiplier)
 	{
 		// static double max_err = 0;
 
 		VComplex f = VComplex(0.0, 0.0);
 		// VComplex e = VComplex(0.0, 0.0);
 
+		const double c = multiplier * (2.0 / m);
 		for (size_t k = 0; k < m; ++k)
 		{
-			const VComplex r = z[k] * (2.0 / m), r_i = r.round();
+			const VComplex r = z[k] * c, r_i = r.round();
 			// e = e.max(VComplex(r - r_i).abs());
 			const VComplex fi = f + r_i;
 			f = VComplex(fi * (1 / 65536.0)).round();

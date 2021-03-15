@@ -89,6 +89,18 @@ public:
 		for (size_t k = 1; k < _n; ++k) z[k] = VComplex(0.0, 0.0);
 	}
 
+	void set1(const size_t i)
+	{
+		VComplex * const z = _z;
+		z[0].real(i) = double(1.0);
+		z[0].imag(i) = double(0.0);
+		for (size_t k = 1; k < _n; ++k)
+		{
+			z[k].real(i) = 0.0;
+			z[k].imag(i) = 0.0;
+		}
+	}
+
 	void set(const Res & x)
 	{
 		const VComplex * const zr = x._z;
@@ -124,7 +136,7 @@ public:
 		for (size_t k = 0; k < _n; ++k) { const VComplex u = zx[k], v = zy[k]; zx[k] = u + v; zy[k] = u - v; }
 	}
 
-	void sqr()
+	void sqr(const int m = 1)
 	{
 		const Complex * const w123 = mainPool.w123;
 
@@ -144,7 +156,7 @@ public:
 		}
 		this->backward4_0(_n / 4, _z);
 
-		this->norm(_z, _n);
+		this->norm(_z, _n, m);
 	}
 
 	void to_multiplier()
@@ -163,7 +175,7 @@ public:
 		}
 	}
 
-	void mul_m(const Res & x)
+	void mul_m(const Res & x, const int m = 1)
 	{
 		const Complex * const w123 = mainPool.w123;
 
@@ -184,10 +196,10 @@ public:
 		}
 		this->backward4_0(_n / 4, _z);
 
-		this->norm(_z, _n);
+		this->norm(_z, _n, m);
 	}
 
-	void mul_mm(const Res & x)
+	void mul_mm(const Res & x, const int m = 1)
 	{
 		const Complex * const w123 = mainPool.w123;
 
@@ -205,6 +217,6 @@ public:
 		}
 		this->backward4_0(_n / 4, _z);
 
-		this->norm(_z, _n);
+		this->norm(_z, _n, m);
 	}
 };

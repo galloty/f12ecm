@@ -146,7 +146,7 @@ private:
 				ec_e.init();
 				ec_m.init();
 
-				for (size_t i = 0; i < 64; ++i) ec_e.add(P_e, P_e, P_e);
+				for (size_t i = 0; i < 64; ++i) ec_e.dbl(P_e);
 			}
 			else
 			{
@@ -160,13 +160,11 @@ private:
 				for (size_t i = 0; i < 64; ++i) ec_m.dbl(P_m, P_m);
 			}
 
-			// for (size_t i = 0; i < 6; ++i) if (_isEdwards) ec_e.mul(P_e, P_e, 5); else ec_m.mul(P_m, P_m, 5, 5); // test
-
 			uint64_t p = prmGen.first(), disp = 100000;
 			for (p = prmGen.next(); p <= B1; p = prmGen.next())
 			{
 				uint64_t m = p; while (m * double(p) <= B1) m *= p;
-				if (_isEdwards) ec_e.mul(P_e, P_e, m); else ec_m.mul(P_m, P_m, m, p);
+				if (_isEdwards) ec_e.mul(P_e, m); else ec_m.mul(P_m, P_m, m, p);
 				if (_quit) break;
 				if ((thread_index == 0) && (p > disp))
 				{
@@ -199,7 +197,7 @@ private:
 			const uint64_t r_min = p - 2;
 			ec_m.mul(T, P_m, r_min - 2 * D), ec_m.mul(R, P_m, r_min);
 
-			for (size_t i = 0; i < v_size; ++i) g.set_z(i, mpz_class(1));	// TODO g.set1()
+			g.set1();
 
 			for (uint64_t r = r_min; r < B2; r += 2 * D)
 			{

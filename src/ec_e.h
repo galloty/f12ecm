@@ -87,7 +87,7 @@ public:
 		Res<VComplex> & y() { return _y; }
 		Res<VComplex> & z() { return _z; }
 
-		void set(const size_t i, const mpz_class & x, const mpz_class & y) { _x.set_z(i, x); _y.set_z(i, y); _z.set_z(i, mpz_class(1));}
+		void set(const size_t i, const mpz_class & x, const mpz_class & y) { _x.set_z(i, x); _y.set_z(i, y); _z.set1(i);}
 		void set(const Point & P) { _x.set(P._x); _y.set(P._y); _z.set(P._z); }
 		void swap(Point & P) { _x.swap(P._x); _y.swap(P._y); _z.swap(P._z); }
 	};
@@ -125,92 +125,92 @@ public:
 	}
 
 private:
-	Res<VComplex> _d, _t;
-	Res<VComplex> _A, _B, _C, _D, _E;
+	Res<VComplex> _d, _D, _E, _F;
 	Point _P0;
 
 public:
-	// Pr = P + P
-	void dbl(Point & Pr, const Point & P)	// 4 T + 4 MM + 1 S + 2 M: 14 transforms
+	// P = P + P
+	void dbl(Point & P)	// 5 T + 5 MM + 1 S(2) + 1 M(2): 14 transforms
 	{
-		_A.set(P.x()); _A.to_multiplier();
-		_B.set(P.y()); _B.to_multiplier();
+		Res<VComplex> & A = P.x();
+		Res<VComplex> & B = P.y();
+		Res<VComplex> & C = P.z();
 
-		_C.set(_A);
-		_C.mul_mm(_B);							// C = xy
-		_C.add(_C, _C);							// C = 2xy
-		_A.mul_mm(_A);							// A = x^2, C = 2xy
-		_B.mul_mm(_B);							// A = x^2, B = y^2, C = 2xy
+		A.to_multiplier();
+		B.to_multiplier();
 
-		Res<VComplex>::addsub(_A, _B);			// A = x^2 + y^2, B = x^2 - y^2, C = 2xy
+		_D.set(A);
+		_D.mul_mm(B, 2);					// A = Tx, B = Ty, C = z, D = 2xy
+		A.mul_mm(A);
+		B.mul_mm(B);						// A = x^2, B = y^2, C = z, D = 2xy
 
-		_D.set(P.z());
-		_D.sqr();								// A = x^2 + y^2, B = x^2 - y^2, C = 2xy, D = z^2
+		Res<VComplex>::addsub(A, B);		// A = x^2 + y^2, B = x^2 - y^2, C = z, D = 2xy
 
-		_D.add(_D, _D);
-		_D.sub(_A, _D);							// A = x^2 + y^2, B = x^2 - y^2, C = 2xy, D = x^2 + y^2 - 2z^2
+		C.sqr(2);
+		C.sub(A, C);						// A = x^2 + y^2, B = x^2 - y^2, C = x^2 + y^2 - 2z^2, D = 2xy
+
+		A.to_multiplier();
+		B.mul_m(A);							// A = T(x^2 + y^2), B = y', C = x^2 + y^2 - 2z^2, D = 2xy
+
+		C.to_multiplier();
+		A.mul_mm(C);						// A = z', B = y', C = T(x^2 + y^2 - 2z^2), D = 2xy
 
 		_D.to_multiplier();
-		_C.mul_m(_D);
-		Pr.x().swap(_C);
-
-		_A.to_multiplier();
-		_B.mul_m(_A);
-		Pr.y().swap(_B);
-
-		_A.mul_mm(_D);
-		Pr.z().swap(_A);
+		C.mul_mm(_D);						// A = z', B = y', C = x'
+		A.swap(C);
 	}
 
-	// Pr = P1 + P2
-	void add(Point & Pr, const Point & P1, const Point & P2)	// 11 T + 8 + 5*2: 29 transforms
+	// P1 = P1 + P2	// TODO checl add(P, P) is OK
+	void add(Point & P1, const Point & P2)	// 9 T + 6 MM + 7 M(2): 29 transforms
 	{
-		_A.set(P1.x()); _A.to_multiplier();
-		_B.set(P2.x()); _B.to_multiplier();
-		_C.set(P1.y()); _C.to_multiplier();
-		_D.set(P2.y()); _D.to_multiplier();
+		Res<VComplex> & A = P1.x();
+		Res<VComplex> & B = P1.y();
+		Res<VComplex> & C = P1.z();
 
-		_E.set(_A);
-		_E.mul_mm(_B);							// E = x12
+		_D.set(P2.x());
+		_E.set(P2.y());						// A = x1, B = y1, C = z1, D = x2, E = y2
 
-		_A.mul_mm(_D);							// A = x1y2, E = x12
-		_D.mul_mm(_C);							// A = x1y2, D = y12, E = x12
-		_C.mul_mm(_B);							// A = x1y2, C = x2y1, D = y12, E = x12
-		_D.sub(_D, _E);							// A = x1y2, C = x2y1, D = y12 - x12
+		A.to_multiplier();
+		B.to_multiplier();
+		_D.to_multiplier();
+		_E.to_multiplier();					// A = Tx1, B = Ty1, C = z1, D = Tx2, E = Ty2
 
-		_B.set(_A);
-		_t.set(_C); _t.to_multiplier();
-		_B.mul_m(_t);
-		_B.mul_m(_d);							// A = x1y2, B = d * x1x2y1y2, C = x2y1, D = y12 - x12
-		_C.add(_C, _A);							// B = d * x1x2y1y2, C = x1y2 + x2y1, D = y12 - x12
+		_F.set(A);
+		_F.mul_mm(_D);						// A = Tx1, B = Ty1, C = z1, D = Tx2, E = Ty2, F = x1x2
+		A.mul_mm(_E);						// A = x1y2, B = Ty1, C = z1, D = Tx2, E = Ty2, F = x1x2
+		_E.mul_mm(B);						// A = x1y2, B = Ty1, C = z1, D = Tx2, E = y1y2, F = x1x2
+		B.mul_mm(_D);						// A = x1y2, B = x2y1, C = z1, E = y1y2, F = x1x2
+		_E.sub(_E, _F);						// A = x1y2, B = x2y1, C = z1, E = y1y2 - x1x2
 
-		_A.set(P1.z());
-		_t.set(P2.z()); _t.to_multiplier();
-		_A.mul_m(_t);							// A = z12, B = d * x1x2y1y2, C = x1y2 + x2y1, D = y12 - x12
+		_D.set(P2.z());
+		_D.to_multiplier();
+		C.mul_m(_D);						// A = x1y2, B = x2y1, C = z1z2, E = y1y2 - x1x2
 
-		_A.to_multiplier();
-		_C.mul_m(_A);
-		_D.mul_m(_A);
-		_A.mul_mm(_A);							// A = z12^2, B = d * x1x2y1y2, C = z12 * (x1y2 + x2y1), D = z12 * (y12 - x12)
+		_D.set(A);
+		_F.set(B); _F.to_multiplier();
+		_D.mul_m(_F);
+		_D.mul_m(_d);						// A = x1y2, B = x2y1, C = z1z2, D = d * x1x2y1y2, E = y1y2 - x1x2
+		A.add(A, B);						// A = x1y2 + x2y1, C = z1z2, D = d * x1x2y1y2, E = y1y2 - x1x2
 
-		Res<VComplex>::addsub(_A, _B);			// A = z12^2 + d * x1x2y1y2, B = z12^2 - d * x1x2y1y2, C = z12 * (x1y2 + x2y1), D = z12 * (y12 - x12)
+		C.to_multiplier();
+		A.mul_m(C);
+		_E.mul_m(C);
+		C.mul_mm(C);						// A = z1z2 * (x1y2 + x2y1), C = z1z2^2, D = d * x1x2y1y2, E = z1z2 * (y1y2 - x1x2)
 
-		_B.to_multiplier();
-		_C.mul_m(_B);
-		Pr.x().swap(_C);
+		Res<VComplex>::addsub(C, _D);		// A = z1z2 * (x1y2 + x2y1), C = z1z2^2 + d * x1x2y1y2, D = z1z2^2 - d * x1x2y1y2, E = z1z2 * (y1y2 - x1x2)
 
-		_A.to_multiplier();
-		_D.mul_m(_A);
-		Pr.y().swap(_D);
+		_D.to_multiplier();
+		A.mul_m(_D);						// A = x', C = z1z2^2 + d * x1x2y1y2, D = T(z1z2^2 - d * x1x2y1y2), E = z1z2 * (y1y2 - x1x2)
 
-		_A.mul_mm(_B);
-		Pr.z().swap(_A);
+		C.to_multiplier();
+		_E.mul_m(C);						// A = x', C = T(z1z2^2 + d * x1x2y1y2), D = T(z1z2^2 - d * x1x2y1y2), E = y'
+
+		C.mul_mm(_D);						// A = x', C = z', E = y'
+		B.swap(_E);
 	}
 
 public:
-	EC_e(const size_t thread_index) : _d(thread_index), _t(thread_index),
-		_A(thread_index), _B(thread_index), _C(thread_index), _D(thread_index), _E(thread_index),
-		_P0(thread_index) {}
+	EC_e(const size_t thread_index) : _d(thread_index), _D(thread_index), _E(thread_index), _F(thread_index), _P0(thread_index) {}
 
 	void set(const size_t i, const mpz_class & d)
 	{
@@ -222,16 +222,15 @@ public:
 		_d.to_multiplier();
 	}
 
-	// Pr = n * P
-	void mul(Point & Pr, const Point & P, const uint64_t n)
+	// P = n * P
+	void mul(Point & P, const uint64_t n)
 	{
 		_P0.set(P);
-		if (&Pr != &P) Pr.set(P);
 
 		for (int b = 62 - __builtin_clzll(n); b >= 0; --b)
 		{
-			dbl(Pr, Pr);
-			if ((n & (uint64_t(1) << b)) != 0) add(Pr, Pr, _P0);
+			dbl(P);
+			if ((n & (uint64_t(1) << b)) != 0) add(P, _P0);
 		}
 	}
 };
