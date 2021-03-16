@@ -16,7 +16,7 @@ inline size_t bit_rev(const size_t i, const size_t n)
 	return r;
 }
 
-size_t MainPool::init(const size_t D, const size_t W, const size_t vec_size, const size_t thread_count)
+void MainPool::init(const size_t D, const size_t W, const size_t vec_size, const size_t thread_count, size_t & size1, size_t & size2)
 {
 	for (size_t s = 1; s <= 128 / 4; s *= 2)
 	{
@@ -30,21 +30,27 @@ size_t MainPool::init(const size_t D, const size_t W, const size_t vec_size, con
 		}
 	}
 
+	// stage 1
+	// ec_e:
+	//  _d, _D, _E, _F: 4 res: 4
+	//  _Pi: W/4 points: 3*W/4
+	// ecm:
+	//  _e:
+	//  _P: 1 point: 3
+
+	// stage 2
 	// ec_m:
 	//  _A2_4, _t: 2 res: 2
 	//  _A, _B, _C, _T1, _T2, _T, _Tm: 7 points: 14
-	// ec_e:
-	//  _d, _D, _E, _F: 4 res: 4
-	//  _P0: 1 point: 3
 	// ecm:
 	//  _m:
 	//  P, Se, T, R, Rm: 5 points: 10
 	//  S: D points: 2*D
 	//  g, t1, t2: 3 res: 3
-	//  _e:
-	//  P: W/4 points: 3*W/4
 
-	_size = vec_size * (256 / 2) * (2 * D + 3 * (W / 4) + 36);
+	size1 = vec_size * (256 / 2) * (3 * (W / 4) + 7);
+	size2 = vec_size * (256 / 2) * (2 * D + 29);
+	_size = size1 + size2;
 
 	for (size_t i = 0; i < thread_count; ++i)
 	{
@@ -52,8 +58,6 @@ size_t MainPool::init(const size_t D, const size_t W, const size_t vec_size, con
 		_mem.push_back(ptr);
 		_offset.push_back(0);
 	}
-
-	return _size;
 }
 
 void MainPool::release()

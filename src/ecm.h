@@ -54,7 +54,7 @@ private:
 	const mpz_class F_12;
 
 public:
-	static const size_t D = 128;
+	static const size_t D = 192;
 
 private:
 	static mpz_class gcd(const size_t i, const Res<VComplex> & x, const mpz_class & n)
@@ -275,11 +275,12 @@ public:
 
 		const size_t v_size = sizeof(VComplex) / sizeof(Complex);
 
-		const size_t mem_size = mainPool.init(ECM::D, EC_e<VComplex>::W, v_size * sizeof(Complex), thread_count);
+		size_t mem_size1, mem_size2;
+		mainPool.init(ECM::D, EC_e<VComplex>::W, v_size * sizeof(Complex), thread_count, mem_size1, mem_size2);
 
 		const char * const ctype = isEdwards ? " Edwards" : " Montgomery";
 		std::cout << "Testing " << v_size * thread_count << ctype << " curves (" << ext << ", " << thread_count << " thread(s)), B1 = "
-				<< B1 << ", B2 = " << B2 << ", mem size = " << mem_size << " B." << std::endl;
+				<< B1 << ", B2 = " << B2 << ", mem size: stage 1 = " << mem_size1 / 1024 << "kB, stage 2 = " << mem_size2 / 1024 << "kB." << std::endl;
 
 
 		for (size_t i = 0; i < thread_count; ++i)
