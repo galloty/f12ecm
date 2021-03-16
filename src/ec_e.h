@@ -7,6 +7,8 @@ Please give feedback to the authors if improvement is realized. It is distribute
 
 #pragma once
 
+#include <vector>
+
 #include "res.h"
 
 // Edwards curve: x^2 + y^2 = 1 + d x^2 y^2
@@ -124,9 +126,12 @@ public:
 		return d;
 	}
 
+public:
+	static const size_t W = size_t(1) << 4;
+
 private:
 	Res<VComplex> _d, _D, _E, _F;
-	Point _P0;
+	Point _Pi[W / 4];
 
 public:
 	// P = P + P
@@ -160,7 +165,7 @@ public:
 		A.swap(C);
 	}
 
-	// P1 = P1 + P2	// TODO checl add(P, P) is OK
+	// P1 = P1 + P2
 	void add(Point & P1, const Point & P2)	// 9 T + 6 MM + 7 M(2): 29 transforms
 	{
 		Res<VComplex> & A = P1.x();
@@ -209,8 +214,60 @@ public:
 		B.swap(_E);
 	}
 
+	// P1 = P1 - P2
+	void sub(Point & P1, const Point & P2)
+	{
+		Res<VComplex> & A = P1.x();
+		Res<VComplex> & B = P1.y();
+		Res<VComplex> & C = P1.z();
+
+		_D.set(P2.x());
+		_E.set(P2.y());
+
+		A.to_multiplier();
+		B.to_multiplier();
+		_D.to_multiplier();
+		_E.to_multiplier();
+
+		_F.set(A);
+		_F.mul_mm(_D);
+		A.mul_mm(_E);
+		_E.mul_mm(B);
+		B.mul_mm(_D);
+		_E.add(_E, _F);						// E = y1y2 + x1x2
+
+		_D.set(P2.z());
+		_D.to_multiplier();
+		C.mul_m(_D);
+
+		_D.set(A);
+		_F.set(B); _F.to_multiplier();
+		_D.mul_m(_F);
+		_D.mul_m(_d);
+		A.sub(A, B);						// A = x1y2 - x2y1, E = y1y2 + x1x2
+
+		C.to_multiplier();
+		A.mul_m(C);
+		_E.mul_m(C);
+		C.mul_mm(C);
+
+		Res<VComplex>::addsub(C, _D);		// A = z1z2 * (x1y2 - x2y1), C = z1z2^2 - d * x1x2y1y2, D = z1z2^2 + d * x1x2y1y2, E = z1z2 * (y1y2 + x1x2)
+
+		C.to_multiplier();
+		A.mul_m(C);
+
+		_D.to_multiplier();
+		_E.mul_m(_D);
+
+		C.mul_mm(_D);
+		B.swap(_E);
+	}
+
 public:
-	EC_e(const size_t thread_index) : _d(thread_index), _D(thread_index), _E(thread_index), _F(thread_index), _P0(thread_index) {}
+	EC_e(const size_t thread_index) : _d(thread_index), _D(thread_index), _E(thread_index), _F(thread_index)
+	{
+		for (size_t i = 0; i < W / 4; ++i) _Pi[i].init(thread_index);
+	}
 
 	void set(const size_t i, const mpz_class & d)
 	{
@@ -223,14 +280,45 @@ public:
 	}
 
 	// P = n * P
-	void mul(Point & P, const uint64_t n)
+	void mul(Point & P, const mpz_class & n)
 	{
-		_P0.set(P);
+		mpz_class ec = n;
+		mpz_ptr e = ec.get_mpz_t();
 
-		for (int b = 62 - __builtin_clzll(n); b >= 0; --b)
+		std::vector<char> naf_vec; naf_vec.reserve(mpz_sizeinbase(e, 2));
+
+		for (; mpz_size(e) != 0; mpz_fdiv_q_2exp(e, e, 1))
+		{
+			int ei = 0;
+			if (mpz_odd_p(e))
+			{
+				ei = mpz_getlimbn(e, 0) & (W - 1);
+				if (ei >= int(W/2)) ei -= W;
+				if (ei > 0) mpz_sub_ui(e, e, ei); else mpz_add_ui(e, e, -ei);
+			}
+			naf_vec.push_back(char(ei));
+		}
+
+		_Pi[0].set(P);
+		_Pi[W / 4 - 1].set(P); dbl(_Pi[W / 4 - 1]);
+		for (size_t i = 1; i < W / 4 - 1; ++i)
+		{
+			_Pi[i].set(_Pi[i - 1]);
+			add(_Pi[i], _Pi[W / 4 - 1]);
+		}
+		add(_Pi[W / 4 - 1], _Pi[W / 4 - 2]);
+	
+		const size_t len = naf_vec.size() - 1;
+		const char * const naf = naf_vec.data();
+
+		P.set(_Pi[(naf[len] - 1) / 2]);
+
+		for (size_t i = 0; i < len; ++i)
 		{
 			dbl(P);
-			if ((n & (uint64_t(1) << b)) != 0) add(P, _P0);
+			const int ni = naf[len - 1 - i];
+			if (ni > 0) add(P, _Pi[(ni - 1) / 2]);
+			else if (ni < 0) sub(P, _Pi[(-ni - 1) / 2]);
 		}
 	}
 };

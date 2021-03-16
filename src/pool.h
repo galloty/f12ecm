@@ -21,7 +21,7 @@ private:
 	std::vector<size_t> _offset;
 
 public:
-	void init(const size_t D, const size_t vec_size, const size_t thread_count);
+	size_t init(const size_t D, const size_t W, const size_t vec_size, const size_t thread_count);
 	void release();
 	void * alloc(const size_t thread_index, const size_t n);
 	void free(const size_t thread_index);

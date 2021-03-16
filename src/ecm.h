@@ -83,9 +83,10 @@ private:
 
 		std::stringstream ss;
 		ss << "Stage " << stage << ", " << time << " seconds:" << std::endl;
+		const std::string param = _isEdwards ? "m" : "sigma";
 		for (const auto & pair : sol)
 		{
-			ss << "sigma = " << pair.first << ":";
+			ss << param << " = " << pair.first << ":";
 			mpz_class r = pair.second;
 			for (size_t i = 0; i < sizeof(p)/sizeof(mpz_class); ++i)
 			{
@@ -164,7 +165,7 @@ private:
 			for (p = prmGen.next(); p <= B1; p = prmGen.next())
 			{
 				uint64_t m = p; while (m * double(p) <= B1) m *= p;
-				if (_isEdwards) ec_e.mul(P_e, m); else ec_m.mul(P_m, P_m, m, p);
+				if (_isEdwards) ec_e.mul(P_e, mpz(m)); else ec_m.mul(P_m, P_m, m, p);
 				if (_quit) break;
 				if ((thread_index == 0) && (p > disp))
 				{
@@ -250,11 +251,12 @@ public:
 
 		const size_t v_size = sizeof(VComplex) / sizeof(Complex);
 
+		const size_t mem_size = mainPool.init(ECM::D, EC_e<VComplex>::W, v_size * sizeof(Complex), thread_count);
+
 		const char * const ctype = isEdwards ? " Edwards" : " Montgomery";
 		std::cout << "Testing " << v_size * thread_count << ctype << " curves (" << ext << ", " << thread_count << " thread(s)), B1 = "
-				<< B1 << ", B2 = " << B2 << "." << std::endl;
+				<< B1 << ", B2 = " << B2 << ", mem size = " << mem_size << " B." << std::endl;
 
-		mainPool.init(ECM::D, v_size * sizeof(Complex), thread_count);
 
 		for (size_t i = 0; i < thread_count; ++i)
 		{
