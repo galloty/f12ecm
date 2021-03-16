@@ -120,6 +120,8 @@ private:
 		EC_m<VComplex> ec_m(thread_index);
 		typename EC_m<VComplex>::Point P_m(thread_index);
 
+		mpz_class p_prod = 1;
+
 		typename EC_m<VComplex>::Point S[D]; for (size_t i = 0; i < D; ++i) S[i].init(thread_index);
 
 		typename EC_m<VComplex>::Point Se(thread_index), T(thread_index), R(thread_index), Rm(thread_index);
@@ -165,7 +167,16 @@ private:
 			for (p = prmGen.next(); p <= B1; p = prmGen.next())
 			{
 				uint64_t m = p; while (m * double(p) <= B1) m *= p;
-				if (_isEdwards) ec_e.mul(P_e, mpz(m)); else ec_m.mul(P_m, P_m, m, p);
+				if (_isEdwards)
+				{
+					p_prod *= mpz(m);
+					if (mpz_size(p_prod.get_mpz_t()) >= 4096)
+					{
+						ec_e.mul(P_e, p_prod);
+						p_prod = 1;
+					}
+				}
+				else ec_m.mul(P_m, P_m, m, p);
 				if (_quit) break;
 				if ((thread_index == 0) && (p > disp))
 				{
@@ -175,6 +186,11 @@ private:
 				}
 			}
 
+			if (p_prod > 1)
+			{
+				ec_e.mul(P_e, p_prod);
+				p_prod = 1;
+			}
 			if (_isEdwards) Edwards2Montgomery(P_e, P_m, F_12);
 
 			const auto clock1 = std::chrono::steady_clock::now();
@@ -186,9 +202,17 @@ private:
 				const mpz_class g1 = gcd(i, P_m.z(), F_12);
 				if (g1 != 1) sol1.push_back(std::make_pair(sigma + i, g1));
 			}
-			if (_quit) break;
+
+			size_t e_dbl_count, e_add_count, e_cost;
+			ec_e.getCounters(e_dbl_count, e_add_count, e_cost);
+			if (thread_index == 0) std::cout << "Edwards: " << e_dbl_count << " DBL, " << e_add_count << " ADD, " << e_cost << " transforms." << std::endl;
+
+			size_t m_dbl_count, m_add_count, m_cost;
+			ec_m.getCounters(m_dbl_count, m_add_count, m_cost);
+			if (thread_index == 0) std::cout << "Montgomery: " << m_dbl_count << " DBL, " << m_add_count << " ADD, " << m_cost << " transforms." << std::endl;
 
 			if (!sol1.empty()) output(1, sol1, std::lrint(dt1.count()));
+			if (_quit) break;
 
 			ec_m.dbl(S[0], P_m); ec_m.dbl(S[1], S[0]);
 			for (size_t d = 2; d < D; ++d) ec_m.add(S[d], S[d - 1], S[0], S[d - 2]);

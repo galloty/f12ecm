@@ -127,16 +127,20 @@ public:
 	}
 
 public:
-	static const size_t W = size_t(1) << 4;
+	static const size_t W = size_t(1) << 9;
+	typedef short naf_type;
 
 private:
 	Res<VComplex> _d, _D, _E, _F;
 	Point _Pi[W / 4];
+	size_t _dbl_count, _add_count;
 
 public:
 	// P = P + P
 	void dbl(Point & P)	// 5 T + 5 MM + 1 S(2) + 1 M(2): 14 transforms
 	{
+		++_dbl_count;
+
 		Res<VComplex> & A = P.x();
 		Res<VComplex> & B = P.y();
 		Res<VComplex> & C = P.z();
@@ -168,6 +172,8 @@ public:
 	// P1 = P1 + P2
 	void add(Point & P1, const Point & P2)	// 9 T + 6 MM + 7 M(2): 29 transforms
 	{
+		++_add_count;
+
 		Res<VComplex> & A = P1.x();
 		Res<VComplex> & B = P1.y();
 		Res<VComplex> & C = P1.z();
@@ -217,6 +223,8 @@ public:
 	// P1 = P1 - P2
 	void sub(Point & P1, const Point & P2)
 	{
+		++_add_count;
+
 		Res<VComplex> & A = P1.x();
 		Res<VComplex> & B = P1.y();
 		Res<VComplex> & C = P1.z();
@@ -277,6 +285,14 @@ public:
 	void init()
 	{
 		_d.to_multiplier();
+		_dbl_count = 0; _add_count = 0;
+	}
+
+	void getCounters(size_t & dbl_count, size_t & add_count, size_t & cost) const
+	{
+		dbl_count = _dbl_count;
+		add_count = _add_count;
+		cost = 14 * _dbl_count + 29 * add_count;
 	}
 
 	// P = n * P
@@ -285,7 +301,7 @@ public:
 		mpz_class ec = n;
 		mpz_ptr e = ec.get_mpz_t();
 
-		std::vector<char> naf_vec; naf_vec.reserve(mpz_sizeinbase(e, 2));
+		std::vector<naf_type> naf_vec; naf_vec.reserve(mpz_sizeinbase(e, 2));
 
 		for (; mpz_size(e) != 0; mpz_fdiv_q_2exp(e, e, 1))
 		{
@@ -296,7 +312,7 @@ public:
 				if (ei >= int(W/2)) ei -= W;
 				if (ei > 0) mpz_sub_ui(e, e, ei); else mpz_add_ui(e, e, -ei);
 			}
-			naf_vec.push_back(char(ei));
+			naf_vec.push_back(naf_type(ei));
 		}
 
 		_Pi[0].set(P);
@@ -309,7 +325,7 @@ public:
 		add(_Pi[W / 4 - 1], _Pi[W / 4 - 2]);
 	
 		const size_t len = naf_vec.size() - 1;
-		const char * const naf = naf_vec.data();
+		const naf_type * const naf = naf_vec.data();
 
 		P.set(_Pi[(naf[len] - 1) / 2]);
 

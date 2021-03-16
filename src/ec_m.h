@@ -68,11 +68,14 @@ public:
 private:
 	Res<VComplex> _A2_4, _t;		// _A2_4 = (A + 2) / 4
 	Point _A, _B, _C, _T1, _T2, _T, _Tm;
+	size_t _dbl_count, _add_count;
 
 public:
 	// Pr = P + P
 	void dbl(Point & Pr, const Point & P)	// 2 mul + 2 sqr + 1 mul_const: 12 transforms
 	{
+		++_dbl_count;
+
 		Pr.addsub(P);				// P'.x = P.x + P.z, P'.z = P.x - P.z
 		Pr.sqr();					// P'.x = (P.x + P.z)^2, P'.z = (P.x - P.z)^2
 		_T.mulc_xz(Pr, _A2_4, _t);	// T.x = P'.x - P'.z, T.z = C * T.x + P'.z
@@ -82,6 +85,8 @@ public:
 	// Pr = P1 + P2, where P1 != P2 and Pm = P1 - P2 or Pm = P2 - P1
 	void add(Point & Pr, const Point & P1, const Point & P2, const Point & Pm)	// 4 mul + 2 sqr: 16 transforms
 	{
+		++_add_count;
+
 		_T.addsub(P2);				// T.x = P2.x + P2.z, T.z = P2.x - P2.z
 		_T.to_multiplier();
 		_Tm.set(Pm);
@@ -106,6 +111,14 @@ public:
 	void init()
 	{
 		_A2_4.to_multiplier();
+		_dbl_count = 0; _add_count = 0;
+	}
+
+	void getCounters(size_t & dbl_count, size_t & add_count, size_t & cost) const
+	{
+		dbl_count = _dbl_count;
+		add_count = _add_count;
+		cost = 12 * _dbl_count + 16 * add_count;
 	}
 
 	// Pr = n * P
