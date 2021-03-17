@@ -54,7 +54,7 @@ private:
 	const mpz_class F_12;
 
 public:
-	static const size_t D = 192;
+	static const size_t D = 1024;
 
 private:
 	static mpz_class gcd(const size_t i, const Res<VComplex> & x, const mpz_class & n)
@@ -203,14 +203,6 @@ private:
 				if (g1 != 1) sol1.push_back(std::make_pair(sigma + i, g1));
 			}
 
-			size_t e_dbl_count, e_add_count, e_cost;
-			ec_e.getCounters(e_dbl_count, e_add_count, e_cost);
-			if (thread_index == 0) std::cout << "Edwards: " << e_dbl_count << " DBL, " << e_add_count << " ADD, " << e_cost << " transforms." << std::endl;
-
-			size_t m_dbl_count, m_add_count, m_cost;
-			ec_m.getCounters(m_dbl_count, m_add_count, m_cost);
-			if (thread_index == 0) std::cout << "Montgomery: " << m_dbl_count << " DBL, " << m_add_count << " ADD, " << m_cost << " transforms." << std::endl;
-
 			if (!sol1.empty()) output(1, sol1, std::lrint(dt1.count()));
 			if (_quit) break;
 
@@ -261,6 +253,14 @@ private:
 
 			if (!sol2.empty()) output(2, sol2, std::lrint(dt2.count()));
 		};
+
+		size_t e_dbl_count, e_add_count, e_cost;
+		ec_e.getCounters(e_dbl_count, e_add_count, e_cost);
+		if (thread_index == 0) std::cout << "Edwards: " << e_dbl_count << " DBL, " << e_add_count << " ADD, " << e_cost << " transforms." << std::endl;
+
+		size_t m_dbl_count, m_add_count, m_cost;
+		ec_m.getCounters(m_dbl_count, m_add_count, m_cost);
+		if (thread_index == 0) std::cout << "Montgomery: " << m_dbl_count << " DBL, " << m_add_count << " ADD, " << m_cost << " transforms." << std::endl;
 
 		mainPool.free(thread_index);
 

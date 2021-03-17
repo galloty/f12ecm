@@ -127,7 +127,7 @@ public:
 	}
 
 public:
-	static const size_t W = size_t(1) << 9;
+	static const size_t W = size_t(1) << 8;
 	typedef short naf_type;
 
 private:

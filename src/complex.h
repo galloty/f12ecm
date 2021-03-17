@@ -10,17 +10,19 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <cstdint>
 #include <cmath>
 
+#define finline		__attribute__((always_inline))
+
 class Complex
 {
 private:
 	double _re, _im;
 
 public:
-	Complex() {}
-	explicit Complex(const double real, const double imag) : _re(real), _im(imag) {}
+	finline Complex() {}
+	finline explicit Complex(const double real, const double imag) : _re(real), _im(imag) {}
 
-	double real() const { return _re; }
-	double imag() const { return _im; }
+	finline double real() const { return _re; }
+	finline double imag() const { return _im; }
 
 	static Complex exp_2iPi(const size_t a, const size_t b)
 	{
