@@ -158,14 +158,9 @@ public:
 		C.sqr(2);
 		C.sub(A, C);						// A = x^2 + y^2, B = x^2 - y^2, C = x^2 + y^2 - 2z^2, D = 2xy
 
-		A.to_multiplier();
-		B.mul_m(A);							// A = T(x^2 + y^2), B = y', C = x^2 + y^2 - 2z^2, D = 2xy
-
-		C.to_multiplier();
-		A.mul_mm(C);						// A = z', B = y', C = T(x^2 + y^2 - 2z^2), D = 2xy
-
-		_D.to_multiplier();
-		C.mul_mm(_D);						// A = z', B = y', C = x'
+		B.mul(A);							// A = T(x^2 + y^2), B = y', C = x^2 + y^2 - 2z^2, D = 2xy
+		A.mul_t(C);						// A = z', B = y', C = T(x^2 + y^2 - 2z^2), D = 2xy
+		C.mul_t(_D);						// A = z', B = y', C = x'
 		A.swap(C);
 	}
 
@@ -182,40 +177,29 @@ public:
 		_E.set(P2.y());						// A = x1, B = y1, C = z1, D = x2, E = y2
 
 		A.to_multiplier();
-		B.to_multiplier();
-		_D.to_multiplier();
-		_E.to_multiplier();					// A = Tx1, B = Ty1, C = z1, D = Tx2, E = Ty2
-
 		_F.set(A);
-		_F.mul_mm(_D);						// A = Tx1, B = Ty1, C = z1, D = Tx2, E = Ty2, F = x1x2
-		A.mul_mm(_E);						// A = x1y2, B = Ty1, C = z1, D = Tx2, E = Ty2, F = x1x2
-		_E.mul_mm(B);						// A = x1y2, B = Ty1, C = z1, D = Tx2, E = y1y2, F = x1x2
+		_F.mul_t(_D);						// A = Tx1, B = y1, C = z1, D = Tx2, E = y2, F = x1x2
+		A.mul_t(_E);						// A = x1y2, B = y1, C = z1, D = Tx2, E = Ty2, F = x1x2
+		_E.mul_t(B);						// A = x1y2, B = Ty1, C = z1, D = Tx2, E = y1y2, F = x1x2
 		B.mul_mm(_D);						// A = x1y2, B = x2y1, C = z1, E = y1y2, F = x1x2
 		_E.sub(_E, _F);						// A = x1y2, B = x2y1, C = z1, E = y1y2 - x1x2
 
 		_D.set(P2.z());
-		_D.to_multiplier();
-		C.mul_m(_D);						// A = x1y2, B = x2y1, C = z1z2, E = y1y2 - x1x2
+		C.mul(_D);							// A = x1y2, B = x2y1, C = z1z2, E = y1y2 - x1x2
 
 		_D.set(A);
-		_F.set(B); _F.to_multiplier();
-		_D.mul_m(_F);
-		_D.mul_m(_d);						// A = x1y2, B = x2y1, C = z1z2, D = d * x1x2y1y2, E = y1y2 - x1x2
-		A.add(A, B);						// A = x1y2 + x2y1, C = z1z2, D = d * x1x2y1y2, E = y1y2 - x1x2
+		A.add(A, B);						// A = x1y2 + x2y1, C = z1z2, D = x1y2, E = y1y2 - x1x2
+		_D.mul(B);
+		_D.mul_m(_d);						// A = x1y2, C = z1z2, D = d * x1x2y1y2, E = y1y2 - x1x2
 
-		C.to_multiplier();
-		A.mul_m(C);
+		A.mul(C);
 		_E.mul_m(C);
 		C.mul_mm(C);						// A = z1z2 * (x1y2 + x2y1), C = z1z2^2, D = d * x1x2y1y2, E = z1z2 * (y1y2 - x1x2)
 
 		Res<VComplex>::addsub(C, _D);		// A = z1z2 * (x1y2 + x2y1), C = z1z2^2 + d * x1x2y1y2, D = z1z2^2 - d * x1x2y1y2, E = z1z2 * (y1y2 - x1x2)
 
-		_D.to_multiplier();
-		A.mul_m(_D);						// A = x', C = z1z2^2 + d * x1x2y1y2, D = T(z1z2^2 - d * x1x2y1y2), E = z1z2 * (y1y2 - x1x2)
-
-		C.to_multiplier();
-		_E.mul_m(C);						// A = x', C = T(z1z2^2 + d * x1x2y1y2), D = T(z1z2^2 - d * x1x2y1y2), E = y'
-
+		A.mul(_D);							// A = x', C = z1z2^2 + d * x1x2y1y2, D = T(z1z2^2 - d * x1x2y1y2), E = z1z2 * (y1y2 - x1x2)
+		_E.mul(C);							// A = x', C = T(z1z2^2 + d * x1x2y1y2), D = T(z1z2^2 - d * x1x2y1y2), E = y'
 		C.mul_mm(_D);						// A = x', C = z', E = y'
 		B.swap(_E);
 	}
@@ -233,40 +217,29 @@ public:
 		_E.set(P2.y());
 
 		A.to_multiplier();
-		B.to_multiplier();
-		_D.to_multiplier();
-		_E.to_multiplier();
-
 		_F.set(A);
-		_F.mul_mm(_D);
-		A.mul_mm(_E);
-		_E.mul_mm(B);
+		_F.mul_t(_D);
+		A.mul_t(_E);
+		_E.mul_t(B);
 		B.mul_mm(_D);
 		_E.add(_E, _F);						// E = y1y2 + x1x2
 
 		_D.set(P2.z());
-		_D.to_multiplier();
-		C.mul_m(_D);
+		C.mul(_D);
 
 		_D.set(A);
-		_F.set(B); _F.to_multiplier();
-		_D.mul_m(_F);
-		_D.mul_m(_d);
 		A.sub(A, B);						// A = x1y2 - x2y1, E = y1y2 + x1x2
+		_D.mul(B);
+		_D.mul_m(_d);
 
-		C.to_multiplier();
-		A.mul_m(C);
+		A.mul(C);
 		_E.mul_m(C);
 		C.mul_mm(C);
 
 		Res<VComplex>::addsub(C, _D);		// A = z1z2 * (x1y2 - x2y1), C = z1z2^2 - d * x1x2y1y2, D = z1z2^2 + d * x1x2y1y2, E = z1z2 * (y1y2 + x1x2)
 
-		C.to_multiplier();
-		A.mul_m(C);
-
-		_D.to_multiplier();
-		_E.mul_m(_D);
-
+		A.mul(C);
+		_E.mul(_D);
 		C.mul_mm(_D);
 		B.swap(_E);
 	}

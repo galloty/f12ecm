@@ -13,6 +13,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <mutex>
 #include <chrono>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -131,6 +132,8 @@ private:
 
 		const size_t v_size = sizeof(VComplex) / sizeof(Complex);
 
+		size_t g_cost = 0;
+
 		for (uint64_t sigma = _sigma_0 + v_size * thread_index; sigma < _sigma_0 + v_size * _thread_count; sigma += v_size * _thread_count)
 		{
 			const auto clock0 = std::chrono::steady_clock::now();
@@ -225,8 +228,9 @@ private:
 					const size_t delta = (p - r) / 2 - 1;
 					t1.set(Rm.x()); t1.mul_mm(S[delta].z());
 					t2.set(Rm.z()); t2.mul_mm(S[delta].x());
-					t1.sub(t1, t2); t1.to_multiplier();
-					g.mul_m(t1);
+					t1.sub(t1, t2);
+					g.mul(t1);
+					g_cost += 1 + 1 + 3;
 				}
 
 				ec_m.add(T, R, Se, T);
@@ -254,13 +258,18 @@ private:
 			if (!sol2.empty()) output(2, sol2, std::lrint(dt2.count()));
 		};
 
-		size_t e_dbl_count, e_add_count, e_cost;
-		ec_e.getCounters(e_dbl_count, e_add_count, e_cost);
-		if (thread_index == 0) std::cout << "Edwards: " << e_dbl_count << " DBL, " << e_add_count << " ADD, " << e_cost << " transforms." << std::endl;
+		if (thread_index == 0)
+		{
+			size_t e_dbl_count, e_add_count, e_cost, m_dbl_count, m_add_count, m_cost;
+			ec_e.getCounters(e_dbl_count, e_add_count, e_cost);
+			ec_m.getCounters(m_dbl_count, m_add_count, m_cost);
+			const size_t cost = e_cost + m_cost + g_cost;
 
-		size_t m_dbl_count, m_add_count, m_cost;
-		ec_m.getCounters(m_dbl_count, m_add_count, m_cost);
-		if (thread_index == 0) std::cout << "Montgomery: " << m_dbl_count << " DBL, " << m_add_count << " ADD, " << m_cost << " transforms." << std::endl;
+			std::cout << std::setprecision(2);
+			std::cout << "Edwards: " << e_dbl_count << " DBL, " << e_add_count << " ADD, " << e_cost << " transforms (" << e_cost * 100.0 / cost << "%)." << std::endl;
+			std::cout << "Montgomery: " << m_dbl_count << " DBL, " << m_add_count << " ADD, " << m_cost << " transforms (" << m_cost * 100.0 / cost << "%)." << std::endl;
+			std::cout << "Stage 2: " << g_cost << " transforms (" << g_cost * 100.0 / cost << "%)." << std::endl;
+		}
 
 		mainPool.free(thread_index);
 

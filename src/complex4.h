@@ -26,6 +26,9 @@ public:
 	finline Complex4(const Complex4 & rhs) : _re(rhs._re), _im(rhs._im) {}
 	finline Complex4 & operator=(const Complex4 & rhs) { _re = rhs._re; _im = rhs._im; return *this; }
 
+	finline static Complex4 set(const Complex & rhs) { return Complex4(_mm256_set1_pd(rhs.real()), _mm256_set1_pd(rhs.imag())); }
+	finline static Complex4 broadcast(const Complex * const rhs) { return Complex4(_mm256_broadcast_sd(rhs->re()), _mm256_broadcast_sd(rhs->im())); }
+
 	finline const __v4df real() const { return _re; }
 	finline const __v4df imag() const { return _im; }
 
@@ -56,8 +59,8 @@ public:
 
 	finline Complex4 sqr() const { return Complex4(_re * _re - _im * _im, (_re + _re) * _im); }
 
-	finline Complex4 mulW(const Complex & rhs) const { return Complex4((_re - _im * rhs.imag()) * rhs.real(), (_im + _re * rhs.imag()) * rhs.real()); }
-	finline Complex4 mulWconj(const Complex & rhs) const { return Complex4((_re + _im * rhs.imag()) * rhs.real(), (_im - _re * rhs.imag()) * rhs.real()); }
+	finline Complex4 mulW(const Complex4 & rhs) const { return Complex4((_re - _im * rhs.imag()) * rhs.real(), (_im + _re * rhs.imag()) * rhs.real()); }
+	finline Complex4 mulWconj(const Complex4 & rhs) const { return Complex4((_re + _im * rhs.imag()) * rhs.real(), (_im - _re * rhs.imag()) * rhs.real()); }
 
 	finline Complex4 round() const
 	{

@@ -38,12 +38,12 @@ public:
 		void addsub() { Res<VComplex>::addsub(_x, _z); }
 		void addsub(const Point & P) { if (this == &P) addsub(); else { _x.add(P._x, P._z); _z.sub(P._x, P._z); } }
 
-		void sqr() { _x.sqr(); _z.sqr(); }
 		void to_multiplier() { _x.to_multiplier(); _z.to_multiplier(); }
-		void cross(const Point & P) { _x.mul_m(P._z); _z.mul_m(P._x); }
+		void sqr() { _x.sqr(); _z.sqr(); }
 		void mul_mm(const Point & P) { _x.mul_mm(P._x); _z.mul_mm(P._z); }
 
-		void vmul(Point & P) { _z.to_multiplier(); _x.mul_m(_z); _z.set(P._x); P._z.to_multiplier(); _z.mul_m(P._z); }
+		void cross(Point & P) { _x.mul(P._z); _z.mul(P._x); }
+		void vmul(Point & P) { _x.mul(_z); _z.set(P._x); _z.mul(P._z); }
 		void mulc_xz(const Point & P, const Res<VComplex> & C, Res<VComplex> & t) { t.sub(P._x, P._z); _x.set(t); t.mul_m(C); _z.add(P._z, t); }
 	};
 
@@ -88,9 +88,7 @@ public:
 		++_add_count;
 
 		_T.addsub(P2);				// T.x = P2.x + P2.z, T.z = P2.x - P2.z
-		_T.to_multiplier();
 		_Tm.set(Pm);
-		_Tm.to_multiplier();
 		Pr.addsub(P1);				// P'.x = P1.x + P1.z, P'.z = P1.x - P1.z
 		Pr.cross(_T);				// P'.x = P'.x * T.z, P'.z = P'.z * T.x
 		Pr.addsub();				// P".x = P'.x + P'.z, P".z = P'.x - P'.z

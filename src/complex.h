@@ -24,6 +24,9 @@ public:
 	finline double real() const { return _re; }
 	finline double imag() const { return _im; }
 
+	finline const double * re() const { return &_re; }
+	finline const double * im() const { return &_im; }
+
 	static Complex exp_2iPi(const size_t a, const size_t b)
 	{
 		const long double C2PI = 6.2831853071795864769252867665590057684L;
