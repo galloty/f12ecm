@@ -115,171 +115,218 @@ public:
 		std::swap(_z, x._z);
 	}
 
-	void add(const Res & x, const Res & y)
+	void add(const Res & x, const Res & y, const double m = 1)
 	{
 		const VComplex * const zx = x._z;
 		const VComplex * const zy = y._z;
 		VComplex * const z = _z;
-		for (size_t k = 0; k < _n; ++k) z[k] = zx[k] + zy[k];
+		for (size_t k = 0; k < _n; ++k) z[k] = zx[k] + zy[k] * m;
 	}
 
-	void sub(const Res & x, const Res & y)
+	void sub(const Res & x, const Res & y, const double m = 1)
 	{
 		const VComplex * const zx = x._z;
 		const VComplex * const zy = y._z;
 		VComplex * const z = _z;
-		for (size_t k = 0; k < _n; ++k) z[k] = zx[k] - zy[k];
+		for (size_t k = 0; k < _n; ++k) z[k] = zx[k] - zy[k] * m;
 	}
 
-	static void addsub(Res & x, Res & y)
+	static void addsub(Res & x, Res & y, const double m = 1)
 	{
 		VComplex * const zx = x._z;
 		VComplex * const zy = y._z;
-		for (size_t k = 0; k < _n; ++k) { const VComplex u = zx[k], v = zy[k]; zx[k] = u + v; zy[k] = u - v; }
+		for (size_t k = 0; k < _n; ++k) { const VComplex u = zx[k], v = zy[k]; zx[k] = u + v * m; zy[k] = u - v * m; }
 	}
 
 	void to_multiplier()
 	{
+		VComplex * const z = _z;
 		const Complex * const w123 = mainPool.w123;
 
-		base::forward4_0(_n / 4, _z);
+		base::forward4_0(_n / 4, z);
 		for (size_t j = 0; j < 4; ++j)
 		{
-			VComplex * const z = &_z[j * _n / 4];
+			VComplex * const zj = &z[j * _n / 4];
 
 			const Complex * const w = &w123[3 * (4 + j)];
 			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
 
-			base::forward4(8, z, w);
-			for (size_t i = 0; i < 4; ++i) base::forward4(2, &z[8 * i], &w4[3 * i]);
+			base::forward4(8, zj, w);
+			for (size_t i = 0; i < 4; ++i) base::forward4(2, &zj[8 * i], &w4[3 * i]);
 		}
 	}
-	
-	void sqr(const int m = 1)
+
+private:
+	finline static void _sqr(VComplex * const z)
 	{
 		const Complex * const w123 = mainPool.w123;
 
-		base::forward4_0(_n / 4, _z);
+		base::forward4_0(_n / 4, z);
 		for (size_t j = 0; j < 4; ++j)
 		{
-			VComplex * const z = &_z[j * _n / 4];
+			VComplex * const zj = &z[j * _n / 4];
 
 			const Complex * const w = &w123[3 * (4 + j)];
 			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
 			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
 
-			base::forward4(8, z, w);
-			for (size_t i = 0; i < 4; ++i) base::forward4(2, &z[8 * i], &w4[3 * i]);
-			for (size_t i = 0; i < 4; ++i) base::square2(&z[8 * i], &ws[3 * 2 * i]);
-			for (size_t i = 0; i < 4; ++i) base::backward4(2, &z[8 * i], &w4[3 * i]);
-			base::backward4(8, z, w);
+			base::forward4(8, zj, w);
+			for (size_t i = 0; i < 4; ++i) base::forward4(2, &zj[8 * i], &w4[3 * i]);
+			for (size_t i = 0; i < 4; ++i) base::square2(&zj[8 * i], &ws[3 * 2 * i]);
+			for (size_t i = 0; i < 4; ++i) base::backward4(2, &zj[8 * i], &w4[3 * i]);
+			base::backward4(8, zj, w);
 		}
-		base::backward4_0(_n / 4, _z);
+		base::backward4_0(_n / 4, z);
+	}
 
-		base::norm(_z, _n, m);
+	finline static void _mul(VComplex * const z, VComplex * const zr)
+	{
+		const Complex * const w123 = mainPool.w123;
+
+		base::forward4_0(_n / 4, z);
+		base::forward4_0(_n / 4, zr);
+		for (size_t j = 0; j < 4; ++j)
+		{
+			VComplex * const zj = &z[j * _n / 4];
+			VComplex * const zrj = &zr[j * _n / 4];
+
+			const Complex * const w = &w123[3 * (4 + j)];
+			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
+			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
+
+			base::forward4(8, zj, w);
+			base::forward4(8, zrj, w);
+			for (size_t i = 0; i < 4; ++i) base::forward4(2, &zj[8 * i], &w4[3 * i]);
+			for (size_t i = 0; i < 4; ++i) base::forward4(2, &zrj[8 * i], &w4[3 * i]);
+			for (size_t i = 0; i < 4; ++i) base::mul2(&zj[8 * i], &zrj[8 * i], &ws[3 * 2 * i]);
+			for (size_t i = 0; i < 4; ++i) base::backward4(2, &zj[8 * i], &w4[3 * i]);
+			base::backward4(8, zj, w);
+		}
+		base::backward4_0(_n / 4, z);
+	}
+
+	finline static void _mul_m(VComplex * const z, const VComplex * const zr)
+	{
+		const Complex * const w123 = mainPool.w123;
+
+		base::forward4_0(_n / 4, z);
+		for (size_t j = 0; j < 4; ++j)
+		{
+			VComplex * const zj = &z[j * _n / 4];
+			const VComplex * const zrj = &zr[j * _n / 4];
+
+			const Complex * const w = &w123[3 * (4 + j)];
+			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
+			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
+
+			base::forward4(8, zj, w);
+			for (size_t i = 0; i < 4; ++i) base::forward4(2, &zj[8 * i], &w4[3 * i]);
+			for (size_t i = 0; i < 4; ++i) base::mul2(&zj[8 * i], &zrj[8 * i], &ws[3 * 2 * i]);
+			for (size_t i = 0; i < 4; ++i) base::backward4(2, &zj[8 * i], &w4[3 * i]);
+			base::backward4(8, zj, w);
+		}
+		base::backward4_0(_n / 4, z);
+	}
+
+	finline static void _mul_t(VComplex * const z, VComplex * const zr)
+	{
+		const Complex * const w123 = mainPool.w123;
+
+		base::forward4_0(_n / 4, zr);
+		for (size_t j = 0; j < 4; ++j)
+		{
+			VComplex * const zj = &z[j * _n / 4];
+			VComplex * const zrj = &zr[j * _n / 4];
+
+			const Complex * const w = &w123[3 * (4 + j)];
+			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
+			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
+
+			base::forward4(8, zrj, w);
+			for (size_t i = 0; i < 4; ++i) base::forward4(2, &zrj[8 * i], &w4[3 * i]);
+			for (size_t i = 0; i < 4; ++i) base::mul2(&zj[8 * i], &zrj[8 * i], &ws[3 * 2 * i]);
+			for (size_t i = 0; i < 4; ++i) base::backward4(2, &zj[8 * i], &w4[3 * i]);
+			base::backward4(8, zj, w);
+		}
+		base::backward4_0(_n / 4, z);
+	}
+
+	finline static void _mul_mm(VComplex * const z, const VComplex * const zr)
+	{
+		const Complex * const w123 = mainPool.w123;
+
+		for (size_t j = 0; j < 4; ++j)
+		{
+			VComplex * const zj = &z[j * _n / 4];
+			const VComplex * const zrj = &zr[j * _n / 4];
+
+			const Complex * const w = &w123[3 * (4 + j)];
+			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
+			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
+
+			for (size_t i = 0; i < 4; ++i) base::mul2(&zj[8 * i], &zrj[8 * i], &ws[3 * 2 * i]);
+			for (size_t i = 0; i < 4; ++i) base::backward4(2, &zj[8 * i], &w4[3 * i]);
+			base::backward4(8, zj, w);
+		}
+		base::backward4_0(_n / 4, z);
+	}
+
+public:
+	void sqr()
+	{
+		VComplex * const z = _z;
+		_sqr(z);
+		base::norm(z, _n, 1);
+	}
+
+	void sqr_add()
+	{
+		VComplex * const z = _z;
+		_sqr(z);
+		base::norm(z, _n, 2);
 	}
 
 	// this *= x, x = T(x)
-	void mul(Res & x, const int m = 1)
+	void mul(Res & x)
 	{
-		const Complex * const w123 = mainPool.w123;
-
-		base::forward4_0(_n / 4, _z);
-		x.forward4_0(_n / 4, x._z);
-		for (size_t j = 0; j < 4; ++j)
-		{
-			VComplex * const z = &_z[j * _n / 4];
-			VComplex * const zr = &x._z[j * _n / 4];
-
-			const Complex * const w = &w123[3 * (4 + j)];
-			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
-			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
-
-			base::forward4(8, z, w);
-			x.forward4(8, zr, w);
-			for (size_t i = 0; i < 4; ++i) base::forward4(2, &z[8 * i], &w4[3 * i]);
-			for (size_t i = 0; i < 4; ++i) x.forward4(2, &zr[8 * i], &w4[3 * i]);
-			for (size_t i = 0; i < 4; ++i) base::mul2(&z[8 * i], &zr[8 * i], &ws[3 * 2 * i]);
-			for (size_t i = 0; i < 4; ++i) base::backward4(2, &z[8 * i], &w4[3 * i]);
-			base::backward4(8, z, w);
-		}
-		base::backward4_0(_n / 4, _z);
-
-		base::norm(_z, _n, m);
+		VComplex * const z = _z;
+		VComplex * const zr = x._z;
+		_mul(z, zr);
+		base::norm(z, _n, 1);
 	}
 
 	// x is T(x), this *= x
-	void mul_m(const Res & x, const int m = 1)
+	void mul_m(const Res & x)
 	{
-		const Complex * const w123 = mainPool.w123;
-
-		base::forward4_0(_n / 4, _z);
-		for (size_t j = 0; j < 4; ++j)
-		{
-			VComplex * const z = &_z[j * _n / 4];
-			const VComplex * const zr = &x._z[j * _n / 4];
-
-			const Complex * const w = &w123[3 * (4 + j)];
-			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
-			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
-
-			base::forward4(8, z, w);
-			for (size_t i = 0; i < 4; ++i) base::forward4(2, &z[8 * i], &w4[3 * i]);
-			for (size_t i = 0; i < 4; ++i) base::mul2(&z[8 * i], &zr[8 * i], &ws[3 * 2 * i]);
-			for (size_t i = 0; i < 4; ++i) base::backward4(2, &z[8 * i], &w4[3 * i]);
-			base::backward4(8, z, w);
-		}
-		base::backward4_0(_n / 4, _z);
-
-		base::norm(_z, _n, m);
+		VComplex * const z = _z;
+		const VComplex * const zr = x._z;
+		_mul_m(z, zr);
+		base::norm(z, _n, 1);
 	}
 
 	// this is T(this), this *= x, x = T(x)
-	void mul_t(const Res & x, const int m = 1)
+	void mul_t(const Res & x)
 	{
-		const Complex * const w123 = mainPool.w123;
-
-		base::forward4_0(_n / 4, x._z);
-		for (size_t j = 0; j < 4; ++j)
-		{
-			VComplex * const z = &_z[j * _n / 4];
-			VComplex * const zr = &x._z[j * _n / 4];
-
-			const Complex * const w = &w123[3 * (4 + j)];
-			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
-			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
-
-			base::forward4(8, zr, w);
-			for (size_t i = 0; i < 4; ++i) base::forward4(2, &zr[8 * i], &w4[3 * i]);
-			for (size_t i = 0; i < 4; ++i) base::mul2(&z[8 * i], &zr[8 * i], &ws[3 * 2 * i]);
-			for (size_t i = 0; i < 4; ++i) base::backward4(2, &z[8 * i], &w4[3 * i]);
-			base::backward4(8, z, w);
-		}
-		base::backward4_0(_n / 4, _z);
-
-		base::norm(_z, _n, m);
+		VComplex * const z = _z;
+		VComplex * const zr = x._z;
+		_mul_t(z, zr);
+		base::norm(z, _n, 1);
 	}
 
 	// this is T(this), x is T(x), this *= x
-	void mul_mm(const Res & x, const int m = 1)
+	void mul_mm(const Res & x)
 	{
-		const Complex * const w123 = mainPool.w123;
+		VComplex * const z = _z;
+		const VComplex * const zr = x._z;
+		_mul_mm(z, zr);
+		base::norm(z, _n, 1);
+	}
 
-		for (size_t j = 0; j < 4; ++j)
-		{
-			VComplex * const z = &_z[j * _n / 4];
-			const VComplex * const zr = &x._z[j * _n / 4];
-
-			const Complex * const w = &w123[3 * (4 + j)];
-			const Complex * const w4 = &w123[3 * 4 * (4 + j)];
-			const Complex * const ws = &w123[3 * 2 * 4 * (4 + j)];
-
-			for (size_t i = 0; i < 4; ++i) base::mul2(&z[8 * i], &zr[8 * i], &ws[3 * 2 * i]);
-			for (size_t i = 0; i < 4; ++i) base::backward4(2, &z[8 * i], &w4[3 * i]);
-			base::backward4(8, z, w);
-		}
-		base::backward4_0(_n / 4, _z);
-
-		base::norm(_z, _n, m);
+	void mul_mm_add(const Res & x)
+	{
+		VComplex * const z = _z;
+		const VComplex * const zr = x._z;
+		_mul_mm(z, zr);
+		base::norm(z, _n, 2);
 	}
 };
