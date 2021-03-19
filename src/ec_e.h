@@ -145,8 +145,8 @@ public:
 		Res<VComplex> & B = P.y();
 		Res<VComplex> & C = P.z();
 
-		A.to_multiplier();
-		B.to_multiplier();
+		A.to_m();
+		B.to_m();
 
 		_D.set(A);
 		_D.mul_mm_add(B);					// A = Tx, B = Ty, C = z, D = 2xy
@@ -176,7 +176,7 @@ public:
 		_D.set(P2.x());
 		_E.set(P2.y());						// A = x1, B = y1, C = z1, D = x2, E = y2
 
-		A.to_multiplier();
+		A.to_m();
 		_F.set(A);
 		_F.mul_t(_D);						// A = Tx1, B = y1, C = z1, D = Tx2, E = y2, F = x1x2
 		A.mul_t(_E);						// A = x1y2, B = y1, C = z1, D = Tx2, E = Ty2, F = x1x2
@@ -217,7 +217,7 @@ public:
 
 	void init()
 	{
-		_d.to_multiplier();
+		_d.to_m();
 		_dbl_count = 0; _add_count = 0;
 	}
 

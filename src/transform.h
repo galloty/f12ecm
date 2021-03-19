@@ -40,11 +40,10 @@ struct Transform
 		}
 	}
 
-	finline static void forward4_0(const size_t m, VComplex * const z)
+	finline static void forward4_0(const size_t m, VComplex * const z, const Complex * const w)
 	{
 		const double csqrt2_2 = 0.707106781186547524400844362104849039284835937688;
-		const Complex cs2pi_16 = Complex(0.92387953251128675612818318939678828682, 0.41421356237309504880168872420969807857);
-		const VComplex w0 = VComplex::set(cs2pi_16);
+		const VComplex w0 = VComplex::broadcast(&w[0]);
 
 		for (size_t k = 0; k < m; ++k)
 		{
@@ -57,11 +56,10 @@ struct Transform
 		}
 	}
 
-	finline static void backward4_0(const size_t m, VComplex * const z)
+	finline static void backward4_0(const size_t m, VComplex * const z, const Complex * const w)
 	{
 		const double csqrt2_2 = 0.707106781186547524400844362104849039284835937688;
-		const Complex cs2pi_16 = Complex(0.92387953251128675612818318939678828682, 0.41421356237309504880168872420969807857);
-		const VComplex w0 = VComplex::set(cs2pi_16);
+		const VComplex w0 = VComplex::broadcast(&w[0]);
 
 		for (size_t k = 0; k < m; ++k)
 		{

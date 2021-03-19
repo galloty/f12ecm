@@ -13,7 +13,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 class MainPool
 {
 public:
-	Complex w123[256];
+	Complex w123[192];
 
 private:
 	size_t _size;

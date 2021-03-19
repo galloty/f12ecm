@@ -18,9 +18,11 @@ inline size_t bit_rev(const size_t i, const size_t n)
 
 void MainPool::init(const size_t D, const size_t W, const size_t vec_size, const size_t thread_count, size_t & size1, size_t & size2)
 {
-	for (size_t s = 1; s <= 128 / 4; s *= 2)
+	w123[0] = Complex(0.92387953251128675612818318939678828682, 0.41421356237309504880168872420969807857);
+
+	for (size_t s = 4; s <= 128 / 4; s *= 2)
 	{
-		Complex * const w123_s = &w123[3 * s];
+		Complex * const w123_s = &w123[3 * s - 11];
 		for (size_t i = 0; i < s; ++i)
 		{
 			const size_t r = bit_rev(i, 4 * s) + 1;

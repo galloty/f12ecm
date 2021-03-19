@@ -38,7 +38,7 @@ public:
 		void addsub() { Res<VComplex>::addsub(_x, _z); }
 		void addsub(const Point & P) { if (this == &P) addsub(); else { _x.add(P._x, P._z); _z.sub(P._x, P._z); } }
 
-		void to_multiplier() { _x.to_multiplier(); _z.to_multiplier(); }
+		void to_multiplier() { _x.to_m(); _z.to_m(); }
 		void sqr() { _x.sqr(); _z.sqr(); }
 		void mul_mm(const Point & P) { _x.mul_mm(P._x); _z.mul_mm(P._z); }
 
@@ -108,7 +108,7 @@ public:
 
 	void init()
 	{
-		_A2_4.to_multiplier();
+		_A2_4.to_m();
 		_dbl_count = 0; _add_count = 0;
 	}
 
