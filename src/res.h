@@ -103,16 +103,16 @@ public:
 		}
 	}
 
-	void set(const Res & x)
+	void set(const Res & rhs)
 	{
-		const VComplex * const zr = x._z;
+		const VComplex * const zr = rhs._z;
 		VComplex * const z = _z;
 		for (size_t k = 0; k < _n; ++k) z[k] = zr[k];
 	}
 
-	void swap(Res & x)
+	void swap(Res & rhs)
 	{
-		std::swap(_z, x._z);
+		std::swap(_z, rhs._z);
 	}
 
 	void add(const Res & x, const Res & y, const double m = 1)
@@ -278,48 +278,60 @@ public:
 		base::norm(z, _n, 2);
 	}
 
-	// this *= x, x = T(x)
-	void mul(Res & x)
+	// this *= rhs, rhs = T(rhs)
+	void mul(Res & rhs)
 	{
 		VComplex * const z = _z;
-		VComplex * const zr = x._z;
+		VComplex * const zr = rhs._z;
 		_mul(z, zr);
 		base::norm(z, _n, 1);
 	}
 
-	// x is T(x), this *= x
-	void mul_m(const Res & x)
+	// rhs is T(rhs), this *= rhs
+	void mul_m(const Res & rhs)
 	{
 		VComplex * const z = _z;
-		const VComplex * const zr = x._z;
+		const VComplex * const zr = rhs._z;
 		_mul_m(z, zr);
 		base::norm(z, _n, 1);
 	}
 
-	// this is T(this), this *= x, x = T(x)
-	void mul_t(const Res & x)
+	// this is T(this), this *= rhs, rhs = T(rhs)
+	void mul_t(const Res & rhs)
 	{
 		VComplex * const z = _z;
-		VComplex * const zr = x._z;
+		VComplex * const zr = rhs._z;
 		_mul_t(z, zr);
 		base::norm(z, _n, 1);
 	}
 
-	// this is T(this), x is T(x), this *= x
-	void mul_mm(const Res & x)
+	// this is T(this), rhs is T(rhs), this *= rhs
+	void mul_mm(const Res & rhs)
 	{
 		VComplex * const z = _z;
-		const VComplex * const zr = x._z;
+		const VComplex * const zr = rhs._z;
 		_mul_mm(z, zr);
 		base::norm(z, _n, 1);
 	}
 
-	// this is T(this), x is T(x), this *= 2 * x
-	void mul_mm_add(const Res & x)
+	// this is T(this), x is T(rhs), this *= 2 * rhs
+	void mul_mm_add(const Res & rhs)
 	{
 		VComplex * const z = _z;
-		const VComplex * const zr = x._z;
+		const VComplex * const zr = rhs._z;
 		_mul_mm(z, zr);
 		base::norm(z, _n, 2);
+	}
+
+	// this is T(this), rhs is T(rhs), this *= rhs unnormalized
+	finline void mul_mm_u(const Res & rhs)
+	{
+		_mul_mm(_z, rhs._z);
+	}
+
+	// this -= rhs  and this is normalized
+	finline void sub_norm(const Res & rhs)
+	{
+		base::sub_norm(_z, rhs._z, _n);
 	}
 };

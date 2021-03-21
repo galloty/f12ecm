@@ -226,11 +226,11 @@ private:
 				for (; p <= r + 2 * D; p = prmGen.next())
 				{
 					const size_t delta = (p - r) / 2 - 1;
-					t1.set(Rm.x()); t1.mul_mm(S[delta].z());
-					t2.set(Rm.z()); t2.mul_mm(S[delta].x());
-					t1.sub(t1, t2);
+					t1.set(Rm.x()); t1.mul_mm_u(S[delta].z());
+					t2.set(Rm.z()); t2.mul_mm_u(S[delta].x());
+					t1.sub_norm(t2);
 					g.mul(t1);
-					g_cost += 1 + 1 + 3;
+					g_cost += 2 + 3;
 				}
 
 				ec_m.add(T, R, Se, T);

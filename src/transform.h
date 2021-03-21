@@ -12,8 +12,12 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include "complex.h"
 
 template<typename VComplex>
-struct Transform
+class Transform
 {
+private:
+	static constexpr double _base = 65536, _base_inv = 1 / 65536.0;
+
+protected:
 	finline static void forward4(const size_t m, VComplex * const z, const Complex * const w)
 	{
 		const VComplex w0 = VComplex::broadcast(&w[0]), w1 = VComplex::broadcast(&w[1]), w2 = VComplex::broadcast(&w[2]);
@@ -113,11 +117,47 @@ struct Transform
 		z[6] = VComplex(u6 * v6).subi(VComplex(u7 * v7).mulW(w0));
 	}
 
+private:
+	finline static void _norm_end(VComplex * const z0, VComplex * const z1, VComplex * const z2, VComplex * const z3, const size_t m,
+								  VComplex & f0, VComplex & f1, VComplex & f2, VComplex & f3)
+	{
+		bool is_zero = f0.is_zero() & f1.is_zero() & f2.is_zero() & f3.is_zero();
+
+		while (!is_zero)
+		{
+			const VComplex t = f3; f3 = f2; f2 = f1; f1 = f0; f0 = t.rotate();
+
+			for (size_t k = 0; k < m / 4; ++k)
+			{
+				const VComplex fi0 = f0 + z0[k];
+				f0 = VComplex(fi0 * _base_inv).round();
+				is_zero = f0.is_zero();
+				z0[k] = fi0 - f0 * _base;
+
+				const VComplex fi1 = f1 + z1[k];
+				f1 = VComplex(fi1 * _base_inv).round();
+				is_zero &= f1.is_zero();
+				z1[k] = fi1 - f1 * _base;
+
+				const VComplex fi2 = f2 + z2[k];
+				f2 = VComplex(fi2 * _base_inv).round();
+				is_zero &= f2.is_zero();
+				z2[k] = fi2 - f2 * _base;
+
+				const VComplex fi3 = f3 + z3[k];
+				f3 = VComplex(fi3 * _base_inv).round();
+				is_zero &= f3.is_zero();
+				z3[k] = fi3 - f3 * _base;
+
+				if (is_zero) break;
+			}
+		}
+	}
+
+protected:
 	// -65536 < z[i] < 65536
 	finline static void norm(VComplex * const z, const size_t m, const int multiplier)
 	{
-		const double base = 65536, base_inv = 1 / 65536.0;
-
 		// static double max_err = 0;
 
 		VComplex * const z0 = &z[0 * m / 4];
@@ -132,57 +172,64 @@ struct Transform
 		for (size_t k = 0; k < m / 4; ++k)
 		{
 			const VComplex r0 = z0[k] * c, ri0 = r0.round(), fi0 = f0 + ri0;
-			f0 = VComplex(fi0 * base_inv).round();
-			z0[k] = fi0 - f0 * base;
+			f0 = VComplex(fi0 * _base_inv).round();
+			z0[k] = fi0 - f0 * _base;
 
 			const VComplex r1 = z1[k] * c, ri1 = r1.round(), fi1 = f1 + ri1;
-			f1 = VComplex(fi1 * base_inv).round();
-			z1[k] = fi1 - f1 * base;
+			f1 = VComplex(fi1 * _base_inv).round();
+			z1[k] = fi1 - f1 * _base;
 
 			const VComplex r2 = z2[k] * c, ri2 = r2.round(), fi2 = f2 + ri2;
-			f2 = VComplex(fi2 * base_inv).round();
-			z2[k] = fi2 - f2 * base;
+			f2 = VComplex(fi2 * _base_inv).round();
+			z2[k] = fi2 - f2 * _base;
 
 			const VComplex r3 = z3[k] * c, ri3 = r3.round(), fi3 = f3 + ri3;
-			f3 = VComplex(fi3 * base_inv).round();
-			z3[k] = fi3 - f3 * base;
+			f3 = VComplex(fi3 * _base_inv).round();
+			z3[k] = fi3 - f3 * _base;
 
 			// e = e.max(VComplex(r0 - ri0).abs()); e = e.max(VComplex(r1 - ri1).abs());
 			// e = e.max(VComplex(r2 - ri2).abs()); e = e.max(VComplex(r3 - ri3).abs());
 		}
 
-		bool is_zero = f0.is_zero() & f1.is_zero() & f2.is_zero() & f3.is_zero();
 		// const double err = e.max();	// SSE4 only
 		// if (err > max_err) { max_err = err; std::cout << err << std::endl; }
 
-		while (!is_zero)
+		_norm_end(z0, z1, z2, z3, m, f0, f1, f2, f3);
+	}
+
+	finline static void sub_norm(VComplex * const z, const VComplex * const zr, const size_t m)
+	{
+		VComplex * const z0 = &z[0 * m / 4];
+		VComplex * const z1 = &z[1 * m / 4];
+		VComplex * const z2 = &z[2 * m / 4];
+		VComplex * const z3 = &z[3 * m / 4];
+		const VComplex * const zr0 = &zr[0 * m / 4];
+		const VComplex * const zr1 = &zr[1 * m / 4];
+		const VComplex * const zr2 = &zr[2 * m / 4];
+		const VComplex * const zr3 = &zr[3 * m / 4];
+
+		VComplex f0 = VComplex(0.0, 0.0), f1 = VComplex(0.0, 0.0), f2 = VComplex(0.0, 0.0), f3 = VComplex(0.0, 0.0);
+
+		const double c = 2.0 / m;
+		for (size_t k = 0; k < m / 4; ++k)
 		{
-			const VComplex t = f3; f3 = f2; f2 = f1; f1 = f0; f0 = t.rotate();
+			const VComplex r0 = (z0[k] - zr0[k]) * c, ri0 = r0.round(), fi0 = f0 + ri0;
+			f0 = VComplex(fi0 * _base_inv).round();
+			z0[k] = fi0 - f0 * _base;
 
-			for (size_t k = 0; k < m / 4; ++k)
-			{
-				const VComplex fi0 = f0 + z0[k];
-				f0 = VComplex(fi0 * base_inv).round();
-				is_zero = f0.is_zero();
-				z0[k] = fi0 - f0 * base;
+			const VComplex r1 = (z1[k] - zr1[k]) * c, ri1 = r1.round(), fi1 = f1 + ri1;
+			f1 = VComplex(fi1 * _base_inv).round();
+			z1[k] = fi1 - f1 * _base;
 
-				const VComplex fi1 = f1 + z1[k];
-				f1 = VComplex(fi1 * base_inv).round();
-				is_zero &= f1.is_zero();
-				z1[k] = fi1 - f1 * base;
+			const VComplex r2 = (z2[k] - zr2[k]) * c, ri2 = r2.round(), fi2 = f2 + ri2;
+			f2 = VComplex(fi2 * _base_inv).round();
+			z2[k] = fi2 - f2 * _base;
 
-				const VComplex fi2 = f2 + z2[k];
-				f2 = VComplex(fi2 * base_inv).round();
-				is_zero &= f2.is_zero();
-				z2[k] = fi2 - f2 * base;
-
-				const VComplex fi3 = f3 + z3[k];
-				f3 = VComplex(fi3 * base_inv).round();
-				is_zero &= f3.is_zero();
-				z3[k] = fi3 - f3 * base;
-
-				if (is_zero) break;
-			}
+			const VComplex r3 = (z3[k] - zr3[k]) * c, ri3 = r3.round(), fi3 = f3 + ri3;
+			f3 = VComplex(fi3 * _base_inv).round();
+			z3[k] = fi3 - f3 * _base;
 		}
+
+		_norm_end(z0, z1, z2, z3, m, f0, f1, f2, f3);
 	}
 };
