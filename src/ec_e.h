@@ -16,16 +16,15 @@ template<typename VComplex>
 class EC_e
 {
 private:
-	// Montgomery construction: Daniel J. Bernstein; Tanja Lange; Peter Birkner; Christiane Peters, ECM using Edwards curves, § 7.7
-	class EC_mc
+	template<int a>
+	class EC_modular
 	{
-	public:
+	private:
 		struct Point
 		{
 			mpz_class x, y;
 		};
 
-	private:
 		static Point add(const Point & p1, const Point & p2, const mpz_class & m)
 		{
 			mpz_class lambda, den;
@@ -36,7 +35,7 @@ private:
 			}
 			else
 			{
-				lambda = 3 * p1.x * p1.x - 12;
+				lambda = 3 * p1.x * p1.x + a;
 				den = p1.y + p2.y;
 			}
 			mpz_invert(den.get_mpz_t(), den.get_mpz_t(), m.get_mpz_t());
@@ -51,10 +50,12 @@ private:
 		}
 
 	public:
-		// (s, t) = n * [-2, 4] on y^2 = x^3 − 12*x (modulo m)
-		static Point get(const uint64_t n, const mpz_class & m)
+		// (s, t) = n * [s1, t1] on T^2 = S^3 + a*S + b (modulo m) [b is not needed]
+		static void get(const uint64_t n, const int s1, const int t1, const mpz_class & m,  mpz_class & s,  mpz_class & t)
 		{
-			Point p0; p0.x = m - 2; p0.y = 4;
+			Point p0;
+			p0.x = s1; if (s1 < 0) p0.x += m;
+			p0.y = t1; if (t1 < 0) p0.y += m;
 			Point p = p0;
 
 			for (int b = 62 - __builtin_clzll(n); b >= 0; --b)
@@ -63,7 +64,7 @@ private:
 				if ((n & (uint64_t(1) << b)) != 0) p = add(p, p0, m);
 			}
 
-			return p;
+			s = p.x; t = p.y;
 		}
 	};
 
@@ -99,12 +100,14 @@ private:
 	static mpz_class cub_mod(const mpz_class & x, const mpz_class & n) { mpz_class t = (x * x * x) % n; if (t < 0) t += n; return t; }
 
 public:
-	// Montgomery construction of Edwards curve: the group order is divisible by 12
-	static mpz_class d_12(const size_t i, const uint64_t sigma, const mpz_class & n, Point & P0)
+	// Daniel J. Bernstein; Tanja Lange; Peter Birkner; Christiane Peters, ECM using Edwards curves, § 7.7
+
+	// Montgomery construction: the group order of Edwards curve is divisible by 12
+	static mpz_class d_12(const size_t i, const uint64_t m, const mpz_class & n, Point & P0)
 	{
-		// (s, t) = sigma * [-2, 4] on y^2 = x^3 − 12*x (modulo n)
-		const typename EC_mc::Point P = EC_mc::get(sigma, n);
-		const mpz_class s = P.x, t = P.y;
+		// (s, t) = m * [-2, 4] on t^2 = s^3 − 12*s (modulo n)
+		mpz_class s, t;
+		EC_modular<-12>::get(m, -2, 4, n, s, t);
 
 		const mpz_class s2 = sqr_mod(s, n), t2 = sqr_mod(t, n);
 		const mpz_class a = s2 - 12 * s - 12, b = ((s - 2) * (s + 6)) % n;
@@ -120,6 +123,42 @@ public:
 
 		den = (b * (s2 - 12)) % n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
 		mpz_class y = (-4 * s * a * den) % n;
+		if (y < 0) y += n;
+
+		P0.set(i, x, y);
+		return d;
+	}
+
+	// Atkin-Morain construction: the group order of Edwards curve is divisible by 16
+	static mpz_class d_16(const size_t i, const uint64_t m, const mpz_class & n, Point & P0)
+	{
+		// (s, t) = m * [12, 40] on t^2 = s^3 − 8*s - 32 (modulo n)
+		mpz_class s, t;
+		EC_modular<-8>::get(m, 12, 40, n, s, t);
+
+		mpz_class den;
+
+		den = s - 9; if (den < 0) den += n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		den = ((t + 25) * den + 1) % n;
+		mpz_class alpha; mpz_invert(alpha.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+
+		den = 8 * sqr_mod(alpha, n) - 1; if (den < 0) den += n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		const mpz_class beta = (2 * alpha * (4 * alpha + 1) * den) % n;
+
+		mpz_class t1 = 2 * beta - 1; if (t1 < 0) t1 += n;
+		const mpz_class t2 = (t1 * t1) % n;
+
+		mpz_class d = 2 * t2 - 1; if (d < 0) d += n;
+		den = (t2 * t2) % n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		d = (d * den) % n;
+
+		den = 6 * beta - 5; if (den < 0) den += n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		mpz_class x = (t1 * (4 * beta - 3) * den) % n;
+		if (x < 0) x += n;
+
+		den = ((t + 3 * s - 2) * (t + s + 16)) % n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		mpz_class y = (t1 * (sqr_mod(t, n) + 50 * t - 2 * cub_mod(s, n) + 27 * sqr_mod(s, n) - 104)) % n;
+		y = (y * den) % n;
 		if (y < 0) y += n;
 
 		P0.set(i, x, y);
