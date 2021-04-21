@@ -47,6 +47,8 @@
 \newcommand\T{\rule{0pt}{2.6ex}}
 \newcommand\B{\rule[-1.4ex]{0pt}{0pt}} 
 
+\DeclareMathOperator{\ord}{ord}
+
 \begin{document}
 
 \begin{titlepage}
@@ -112,14 +114,19 @@ The smallest Fermat number which is not completely factored is $F_{12}$. Six pri
 	 & &$568630647535356955169033410940867804839360742060818433 \:\cdot\: C_{1133}$
 \end{tabular}
 
-\chapter{Elliptic curves modulo $p$}
+\chapter{Elliptic curves}
 
-An elliptic curve over $\mathbb{Z}/p\mathbb{Z}$ is a set of points
-$P = (x, y) \in (\mathbb{Z}/p\mathbb{Z})^2$ such that
-$$y^2 = x^3 + ax + b$$
-with the condition $4a^3 + 27b^2 \neq 0$ and an additional point at infinity $O$.
+\section{Elliptic curves modulo $p$}
 
-The point $Q = (x, -y)$ is on the curve: $Q = -P$ is the point opposite of $P$.
+An elliptic curve over a field $K$ is a set of points in $K^2$ on the curve
+$$y^2 + a_1\, x y + a_3\, y = x^3 + a_2\, x^2 + a_4\, x + a_6,$$
+for some coefficients $a_1, a_2, a_3, a_4$ and $a_6$ in $K$ and an additional point at infinity $O$.\\
+If $K$ has characteristic different from 2 and 3 then the curve can be transformed into
+$$y^2 = x^3 + a\,x + b.$$
+The condition $\Delta = -16\,(4\,a^3 + 27\,b^2) \neq 0$ ensures that the curve is non-singular.
+
+Let $E: y^2 = x^3 + a\,x + b$ over $K = \mathbb{Z}/p\mathbb{Z}$ and $P = (x, y)$
+a point on $E$. The point $Q = (x, -y)$ is on the curve: $Q = -P$ is the point opposite of $P$.
 The curve has the property that if a non-vertical line intersects it at two points $P$ and $Q$,
 then it will also have a third point $R$ of intersection. The addition law is defined
 by $P + Q = -R$. If $P = Q$, the tangent of the curve at $P$ is considered.
@@ -139,14 +146,195 @@ To avoid the time-consuming inversion over $\mathbb{Z}/p\mathbb{Z}$, projective 
 are preferred for computations. $X, Y, Z$ are integers such that $x = X/Z$ and $y = Y/Z$.
 If $P \neq O$ then $Z \neq 0$ and the coordinates of the identity $O$ are $(0, Y, 0)$.
 
-$y^2 = x^3 + ax + b$ is called the Weierstrass form but there exist some alternative representations
-of elliptic curves. Some of them are faster for computations.
-{\scshape f\textsubscript{12}ecm} representation is the Montgomery curve
-$$By^2 = x^3 + Ax^2 + x.$$
-The Montgomery curves are a subset of Weierstrass curves.
+$y^2 = x^3 + a\,x + b$ is called the short Weierstrass form but there exist
+some alternative representations of elliptic curves. Some of them are faster for computations.
 
-Montgomery coordinates are the projective coordinates $(X, Z)$. The computation of $Y$
-is not needed for the Elliptic Curve Method.
+\section{Montgomery curves}
+
+One of {\scshape f\textsubscript{12}ecm} representations is the Montgomery curve
+$$B\,y^2 = x^3 + A\,x^2 + x,$$
+where $A \neq \pm2, B \neq 0$. 
+The Montgomery curves are a subset of elliptic curves. The order of a Montgomery curve over
+$\mathbb{Z}/p\mathbb{Z}$ is always divisible by 4.
+
+The $j$-invariant is $256\,(A^2 - 3)^3 / (A^2 - 4)$. Because it is independent of $B$,
+the computation of $y$ and $B$ is not needed for the Elliptic Curve Method.
+
+Montgomery coordinates are the two projective coordinates $(X, Z)$.
+
+\section{Edwards curves}
+
+The other representation of {\scshape f\textsubscript{12}ecm} is the Edwards curve
+$$x^2 + y^2 = 1 + d\,x^2y^2,$$
+where $d \not\in \{0, 1\}$. It is birationally equivalent to a Montgomery curve:\\
+if $e = 1 - d$, $u = (1 + y)/(1 - y)$, $v = 2\,u / x$ then $(1/e)\,v^2 = u^3 + (4/e - 2)\,u^2 + u$
+and the point $P = (0, 1)$ is mapped to the infinity $O$.
+
+However, the Montgomery curve $B\,v^2 = u^3 + A\,u^2 + u$ is birationally equivalent to a
+twisted Edwards curve:
+if $a = (A + 2) / B$, $d = (A - 2) / B$, $x = u / v$, $y = (u - 1)(u + 1)$ then
+$a\,x^2 + y^2 = 1 + d\,x^2y^2$. It can be written in Edwards form if $a$ is a square.
+
+\section{Modular curves}
+
+The Tate normal form of an elliptic curve is
+$$E(b, c): y_T^2 + (1 - c)\, x_T y_T - b\,y_T = x_T^3 -  b\, x_T^2.$$
+It is  obtained from the  Weierstrass normal form by  imposing the conditions: $P = (0, 0)$ is a
+torsion point, the straight line $x_T = 0$ is a tangent to $E$ at $P$ and $\ord(P)\neq 2 ,3$.
+
+If $P = (x_0,\, y_0)$ then $-P = (x_0,\, -y_0 - (1 - c)\, x_0 + b)$.
+Starting from $P = (0,\, 0)$, we can calculate
+$2\,P = \left(b,\, b\,c\right)$, $3\,P = \left(c,\, b - c\right)$,
+$4\,P = \left((-b\,c + b^2)/c^2,\, (b^2\,c^2 + b^2\,c - b^3)/c^3\right)$. Define $r = b/c$,
+we have $4\,P = \left(r\,(r - 1),\, r^2\,(c - r + 1)\right)$.
+
+We can remove the $x_T y_T$ term with the transform $x = x_T$ and $y = y_T + ((1 - c)\,x_T -  b)/2$.
+We get
+$$E'(b, c): y^2 = x^3 + \frac{(c - 1)^2 - 4\,b}{4} x^2 + \frac{b\,(c - 1)}{2} x + \frac{b^2}{4}.$$
+
+\subsection{Torsion group $\mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/4\mathbb{Z}$ over $\mathbb{Q}$}
+
+If $c = 0$ then $P_4 = (0, 0)$ is a point of order 4 on the Tate normal form. Hence the equation is
+$$y^2 = x^3 + \frac{1 - 4\,b}{4}\, x^2 - \frac{b}{2}\, x + \frac{b^2}{4}.$$
+The subgroup of order 4 is $\{\,(0, -b/2);\, (b, 0);\, (0, b/2);\, O\, \}$.
+
+If $2\,P = O$ then the $y$-coordinate of $P$ is zero. The $x$-solutions are
+$b,\, (\pm\sqrt{16 b+1} - 1)/8$. Define $b = v^2 - 1/16$. The two new solutions are
+ $(\pm4\,v - 1)/8$. Since $((-4\,v - 1)/8,\, 0) + (b,\, 0) = ((4\,v - 1)/8,\, 0)$,
+the new subgroup of order 2 is $\{\,((4\,v - 1)/8,\, 0);\, O\, \}$. Note that the
+discriminant of the Weierstrass form is $\Delta = b^4\,(16\,b + 1)$.
+
+We have
+$$y^2 = \left(x - \left(v^2 - \frac{1}{16}\right)\right)\,
+ \left(x - \frac{4\,v - 1}{8}\right)\, \left(x - \frac{-4\,v - 1}{8}\right),$$
+and $P = ((4\,v - 1)/8,\, 0)$ is a point of order 2.
+
+Define $x = z + (-4\,v - 1)/8$, we have
+$$64\, y^2 = 64\, z^3 - 4\,(16\,v^2 + 24\,v + 1)\, z^2 + 4\,v\,(4\,v + 1)^2\, z.$$
+Define $A = -((4\,v+1)^2 + 16\,v)$ and $B = 16\,v\,(4\,v + 1)^2$.
+A coordinate transform leads to the curve
+$$y^2 = x^3 + A\, x^2 + B\, x.$$
+We search for $x$ such that $x + A + B / x = u^2.$ We take $x = 4\,v + 1$ then
+the modular curve is
+$$48\,v^2 - 4\,v = u^2.$$
+It has genus 0 and one solution is $v = 0$, $u = 0$. If $v = \alpha u$ then
+$u = 4\,\alpha / (48\, \alpha^2 - 1)$.
+
+\begin{theorem}
+Define $v = 4\,\alpha^2 / (48\, \alpha^2 - 1)$, $A = -((4\,v+1)^2 + 16\,v)$,
+$B = 16\,v\,(4\,v + 1)^2$. For any prime $p > 3$ the order of $y^2 = x^3 + A\, x^2 + B\, x$
+over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 8 and $(\,4\,v + 1, v\,(4\,v + 1) / \alpha \,)$
+is a point of order greater than 8.
+\end{theorem}
+
+\subsection{Torsion group $\mathbb{Z}/4\mathbb{Z} \times \mathbb{Z}/4\mathbb{Z}$ over $\mathbb{Q}(i)$}
+
+We can try to extend the torsion group: we search for $Q$ such that $2\,Q = P = ((4\,v - 1)/8,\, 0)$.
+
+From \cite[Theorem 4.2]{Knapp1}, $(4\,v - 1)/8 - (v^2 - 1/16) = -(4\,v - 1)^2 / 16$ and
+$(4\,v - 1)/8 - (-4\,v - 1)/8 = v$ must be squares. Then $v = w^2$, the field is
+$\mathbb{Q}(i)$ and the torsion group is $\mathbb{Z}/4\mathbb{Z} \times \mathbb{Z}/4\mathbb{Z}$.
+
+The equation is $48\,w^4 - 4\,w^2 = u^2$. Let $s = 2\,w$ and $t = u / s$, we have the modular curve
+$$3\,s^2 - 1 = t^2.$$
+It has genus 0 and $s = 0$, $t = i$ is a solution in $\mathbb{Q}(i)$. If $z = t - i$
+and $s = \alpha\,z$ we have $z = 2\,i / (3\,\alpha^2 - 1)$ and $w = i\, \alpha / (3\,\alpha^2 - 1)$.
+
+\begin{theorem}
+Define $v = -\alpha^2 / (3\,\alpha^2 - 1)^2$, $A = -((4\,v+1)^2 + 16\,v)$,
+$B = 16\,v\,(4\,v + 1)^2$. For any prime $p \equiv 1 \pmod{4}$,
+the order of $y^2 = x^3 + A\, x^2 + B\, x$ over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 16
+and $(\,4\,v + 1, - 2\,v\,(4\,v + 1)\,(3\,\alpha^2 + 1)/\alpha\,)$ is a point of order
+greater than 16.
+\end{theorem}
+
+By the coordinate changes $x = \sqrt{B}\,x_M$, $y = \sqrt{B}\,y_M$, we get the Montgomery form
+$$\frac{1}{\sqrt{B}}\, y_M^2 = x_M^3 + \frac{A}{\sqrt{B}}\, x_M^2 + x_M.$$
+The equivalence with a twisted Edwards curve is the map $x_T = x_M / y_M$,
+$y_T = (x_M - 1)/(x_M + 1)$,
+$$(A + 2\,\sqrt{B})\,x_T^2 + y_T^2 = 1 + (A - 2\sqrt{B})\,x_T^2y_T^2.$$
+We have $A \pm 2\,\sqrt{B} = -(4\,w^2+1 \mp 4\,w)^2
+= -(2\,w \mp 1)^4$.
+Finally if $x_E = i\,(2\,w - 1)^2\,x_T$, $y_E = y_T$, we get the Edwards form
+$x_E^2 + y_E^2 = 1 + \left(\frac{2\,w + 1}{2\,w - 1}\right)^4\,x_E^2\,y_E^2$.
+
+\begin{theorem}
+Define
+$$d = \left( \frac{3\,\alpha^2 + 2\,i\,\alpha - 1}{3\,\alpha^2 - 2\,i\,\alpha -1} \right)^4,\quad
+x_P = \frac{i \, (3\,\alpha^2 - 2\,i\,\alpha - 1)^2}{2\, \alpha\, (3\,\alpha^2 + 1)},\quad
+y_P = \frac{(\alpha - i)\,(3\,\alpha - i)}{(\alpha + i)\,(3\,\alpha + i)}.$$
+For any prime $p \equiv 1 \pmod{4}$, the order of $x^2 + y^2 = 1 + d\,x^2y^2$ over
+$\mathbb{Z}/p\mathbb{Z}$ is divisible by 16 and $(x_P,\,y_P)$ is a point of order greater than 16.
+\end{theorem}
+
+
+
+
+
+
+\iffalse
+
+We now suppose that $x = (v + 1) / 2$ is the abscissa of a rational point on the curve.
+We have $$1024\, y^2 = -640\, v^3 - 80\, v^2\, + 560\,v + 225.$$
+Let $t = 8640\,y$ and $s = -15\,(24\,v + 1)$. The new equation is
+$$t^2 = s^3 - 114075\,s + 14694750$$
+and $(129, 1458)$ is a non-torsion point on the curve.
+
+\begin{theorem}
+Let $(s, t) = n\cdot (129, 1458)$ on the modular curve $T^2 = S^3 - 114075\,S + 14694750$.
+Define $v = -(s + 15) / 360$ and $b = v^2 - 1/16$. Then for any prime $p > 3$ the order of
+$y^2 = x^3 + \frac{1 - 4\,b}{4}\, x^2 - \frac{b}{2}\, x + \frac{b^2}{4}$
+over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 8  and $(\left(v + 1\right) / 2,\, t / 8640)$
+is a point of infinite order.
+\end{theorem}
+
+By the coordinate changes $x = b\,(x_M + 1)$, $y = b\,y_M$, we get the Montgomery form
+$$\frac{1}{b}\,y_M^2 = x_M^3 + (2 + \frac{1}{4b})\,x_M^2 + x_M.$$
+
+The subgroup of order 4 is now $\{\,(-1, -1/2);\, (0, 0);\, (-1, 1/2);\, O\, \}$ and
+the subgroup of order 2 is $\{\,(-(4\,v - 1)/(4\,v + 1), 0);\, O\, \}$.
+
+The equivalence with a twisted Edwards curve is the map $x_T = x_M / y_M$,
+$y_T = (x_M - 1)/(x_M + 1)$,
+$$(\frac{1}{4} + 4\,b)\,x_T^2 + y_T^2 = 4\,v^2\,x_T^2 + y_T^2 = 1 + \frac{1}{4}\,x_T^2y_T^2.$$
+Finally if $x_E = 2\,v\,x_T$, $y_E = y_T$, $\alpha = 1 / (4\,v)$, we get the Edwards form
+$$x_E^2 + y_E^2 = 1 + \alpha^2\,x_E^2\,y_E^2.$$
+
+Note that the subgroup of order 4 is now $\{\,(1, 0);\, (0, -1);\, (-1, 0);\, O = (0, 1)\, \}$
+but the subgroup of order 2 is not defined because $x_E = 2\,v\,x_M / y_M$ and $y_M = 0$.
+
+\begin{theorem}
+Let $(s, t) = n\cdot (129, 1458)$ on the modular curve $T^2 = S^3 - 114075\,S + 14694750$.
+Define $\alpha = 90 / (s + 15)$. Then for any prime $p > 3$ the order of
+$x^2 + y^2 = 1 + \alpha^2\,x^2y^2$ over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 8
+and $(270\, (9\,\alpha^2 - 2\,\alpha - 1)\, /\, (\alpha^3\,t),\,
+(5\,\alpha^2 - \alpha - 1)\, /\, (\alpha\, (4\,\alpha - 1)))$
+is a point of infinite order.
+\end{theorem}
+
+\bigskip
+
+From
+$$1024\, y^2 = 1024\,x^3 + (320 - 1024\,v^2)\, x^2 + (32 - 512\,v^2)\, x
++ 256\,v^4 - 32\,v^2 + 1.$$
+define $x = z + (-4\,v - 1)/8$, we have
+$$64\, y^2 = 64\, z^3 - 4\,(16\,v^2 + 24\,v + 1)\, z^2 + 4\,v\,(4\,v + 1)^2\, z.$$
+A coordinate transform leads to 
+$$y^2 = x^3 - (16\,v^2 + 24\,v + 1)\, x^2 + 16\,v\,(4\,v + 1)^2\, x.$$
+
+
+$$y^2 + 4\, x y - (64\,v^2 - 4)\,y = x^3 - (16\,v^2 - 1)\, x^2.$$
+
+From
+$$y^2 = x^3 + \frac{1 - 4\,b}{4}\, x^2 - \frac{b}{2}\, x + \frac{b^2}{4}.$$
+$x = x_s + b, y = y_s$:
+$$y_s^2 = x_s^3 + \frac{8\,b + 1}{4}\, x_s^2 + b^2\, x_s.$$
+$$y_s^2 = x_s^3 + (2\,v^2 + 1/8)\, x_s^2 + (v^4 - v^2/8 + 1/256)\, x_s.$$
+$$4096\,y_s^2 = 4096\,x_s^3 + 4096\,(2\,v^2 + 1/8)\, x_s^2 + 4096\,(v^4 - v^2/8 + 1/256)\, x_s.$$
+$$y^2 = x^3 + (32\,v^2 + 2)\, x_s^2 + (256\,v^4 - 32\,v^2 + 1)\, x_s.$$
+$$y^2 = x^3 + (32\,v^2 + 2)\, x_s^2 + (4\,v - 1)^2\, (4\,v + 1)^2\, x_s.$$
+
+\fi
 
 \chapter{Elliptic Curve Method}
 
@@ -399,7 +587,7 @@ then $B_1(\log p)$ and $B_2(\log p)$.
 	\vspace*{0.0cm}
 	\centering
 	\includegraphics[width=15.5cm, angle=0]{img/B1_B2_n.png}
-	\caption{\label{fig:B12_n} $B_2$ and $B_1$ as a function of the index of the curve.}
+	\caption{\label{fig:B_12_n} $B_2$ and $B_1$ as a function of the index of the curve.}
 \end{figure}
 
 $\log B_2 = f(\log i)$ where $i$ is the $i^\text{th}$ curve is close to a linear function.
@@ -410,7 +598,7 @@ $\log p \approx (3 + 1.3\, \log i)^{5/3}$.
 
 The following parameters are applied: let $i$ be the $i^\text{th}$ curve and $d$ be the
 expected number of digits of the prime factor, then
-\begin{align*} 
+\begin{align*}
 B_2 &= 400\, i^{\sqrt{2}},\\
 B_1 &= B_2\, /\, (26 + 1.8\, \log{i}),\\
 d &= (1.8 + 0.79\, \log i)^{5/3}.
@@ -449,6 +637,9 @@ of a Certain Relative Magnitude}, Arkiv för Mat., Astron. och Fys. 22A, 1-14, 1
 
 \bibitem{Fermat1} Pierre~de~Fermat, \emph{Lettre à Marin Mersenne},
 \url{https://www.archive.org/stream/oeuvresdefermat942ferm#page/212/mode/2up}.
+
+\bibitem{Knapp1} Anthony~W.~Knapp, \emph{Elliptic Curves}, Princeton University Press,
+Princeton, NJ, 1992.
 
 \bibitem{KnuthPardo1} Donald~E.~Knuth and Luis~Trabb~Pardo, \emph{Analysis of a simple
 factorization algorithm}, Theoretical Computer Science, Volume 3, Issue 3, December 1976,
