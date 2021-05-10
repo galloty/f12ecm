@@ -125,7 +125,7 @@ If $K$ has characteristic different from 2 and 3 then the curve can be transform
 $$y^2 = x^3 + a\,x + b.$$
 The condition $\Delta = -16\,(4\,a^3 + 27\,b^2) \neq 0$ ensures that the curve is non-singular.
 
-Let $E: y^2 = x^3 + a\,x + b$ over $K = \mathbb{Z}/p\mathbb{Z}$ and $P = (x, y)$
+Let $E: y^2 = x^3 + a\,x + b$ over $K = \mathbb{Z}/p\mathbb{Z}$ and $P = (x, y)$ be
 a point on $E$. The point $Q = (x, -y)$ is on the curve: $Q = -P$ is the point opposite of $P$.
 The curve has the property that if a non-vertical line intersects it at two points $P$ and $Q$,
 then it will also have a third point $R$ of intersection. The addition law is defined
@@ -166,7 +166,7 @@ Montgomery coordinates are the two projective coordinates $(X, Z)$.
 
 The other representation of {\scshape f\textsubscript{12}ecm} is the Edwards curve
 $$x^2 + y^2 = 1 + d\,x^2y^2,$$
-where $d \not\in \{0, 1\}$. It is birationally equivalent to a Montgomery curve:\\
+where $d \not\in \{0, 1\}$. It is equivalent to a Montgomery curve:\\
 if $e = 1 - d$, $u = (1 + y)/(1 - y)$, $v = 2\,u / x$ then $(1/e)\,v^2 = u^3 + (4/e - 2)\,u^2 + u$
 and the point $P = (0, 1)$ is mapped to the infinity $O$.
 
@@ -175,7 +175,7 @@ twisted Edwards curve:
 if $a = (A + 2) / B$, $d = (A - 2) / B$, $x = u / v$, $y = (u - 1)(u + 1)$ then
 $a\,x^2 + y^2 = 1 + d\,x^2y^2$. It can be written in Edwards form if $a$ is a square.
 
-\section{Modular curves}
+\section{Torsion groups}
 
 The Tate normal form of an elliptic curve is
 $$E(b, c): y_T^2 + (1 - c)\, x_T y_T - b\,y_T = x_T^3 -  b\, x_T^2.$$
@@ -186,7 +186,7 @@ If $P = (x_0,\, y_0)$ then $-P = (x_0,\, -y_0 - (1 - c)\, x_0 + b)$.
 Starting from $P = (0,\, 0)$, we can calculate
 $2\,P = \left(b,\, b\,c\right)$, $3\,P = \left(c,\, b - c\right)$,
 $4\,P = \left((-b\,c + b^2)/c^2,\, (b^2\,c^2 + b^2\,c - b^3)/c^3\right)$. Define $r = b/c$,
-we have $4\,P = \left(r\,(r - 1),\, r^2\,(c - r + 1)\right)$.
+$s = c^2/(b - c)$, we have $x_{4P} = r\,(r - 1)$, $x_{5P} = r\,s\,(s - 1)$, etc.
 
 We can remove the $x_T y_T$ term with the transform $x = x_T$ and $y = y_T + ((1 - c)\,x_T -  b)/2$.
 We get
@@ -194,33 +194,32 @@ $$E'(b, c): y^2 = x^3 + \frac{(c - 1)^2 - 4\,b}{4} x^2 + \frac{b\,(c - 1)}{2} x 
 
 \subsection{Torsion group $\mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/4\mathbb{Z}$ over $\mathbb{Q}$}
 
-If $c = 0$ then $P_4 = (0, 0)$ is a point of order 4 on the Tate normal form. Hence the equation is
+If $c = 0$ then $(0, 0)$ is a point of order 4 on the Tate normal form. Hence the equation is
 $$y^2 = x^3 + \frac{1 - 4\,b}{4}\, x^2 - \frac{b}{2}\, x + \frac{b^2}{4}.$$
 The subgroup of order 4 is $\{\,(0, -b/2);\, (b, 0);\, (0, b/2);\, O\, \}$.
 
 If $2\,P = O$ then the $y$-coordinate of $P$ is zero. The $x$-solutions are
 $b,\, (\pm\sqrt{16 b+1} - 1)/8$. Define $b = v^2 - 1/16$. The two new solutions are
- $(\pm4\,v - 1)/8$. Since $((-4\,v - 1)/8,\, 0) + (b,\, 0) = ((4\,v - 1)/8,\, 0)$,
-the new subgroup of order 2 is $\{\,((4\,v - 1)/8,\, 0);\, O\, \}$. Note that the
-discriminant of the Weierstrass form is $\Delta = b^4\,(16\,b + 1)$.
-
+ $(\pm4\,v - 1)/8$. $\{\,((4\,v - 1)/8,\, 0);\, O\, \}$ is a new subgroup of order 2
+and $((-4\,v - 1)/8,\, 0) = ((4\,v - 1)/8,\, 0) + (b,\, 0)$.
 We have
 $$y^2 = \left(x - \left(v^2 - \frac{1}{16}\right)\right)\,
  \left(x - \frac{4\,v - 1}{8}\right)\, \left(x - \frac{-4\,v - 1}{8}\right),$$
 and $P = ((4\,v - 1)/8,\, 0)$ is a point of order 2.
 
-Define $x = z + (-4\,v - 1)/8$, we have
+Define $z = x - (-4\,v - 1)/8$, we have
 $$64\, y^2 = 64\, z^3 - 4\,(16\,v^2 + 24\,v + 1)\, z^2 + 4\,v\,(4\,v + 1)^2\, z.$$
 Define $A = -((4\,v+1)^2 + 16\,v)$ and $B = 16\,v\,(4\,v + 1)^2$.
 A coordinate transform leads to the curve
 $$y^2 = x^3 + A\, x^2 + B\, x.$$
 We search for $x$ such that $x + A + B / x = u^2.$ We take $x = 4\,v + 1$ then
-the modular curve is
+the condition is
 $$48\,v^2 - 4\,v = u^2.$$
-It has genus 0 and one solution is $v = 0$, $u = 0$. If $v = \alpha u$ then
+The curve has genus 0 and one solution is $v = 0$, $u = 0$. If $v = \alpha u$ then
 $u = 4\,\alpha / (48\, \alpha^2 - 1)$.
 
 \begin{theorem}
+Let $\alpha \in \mathbb{Q}\, \textbackslash \, \{0, \pm1/8\}$.
 Define $v = 4\,\alpha^2 / (48\, \alpha^2 - 1)$, $A = -((4\,v+1)^2 + 16\,v)$,
 $B = 16\,v\,(4\,v + 1)^2$. For any prime $p > 3$ the order of $y^2 = x^3 + A\, x^2 + B\, x$
 over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 8 and $(\,4\,v + 1, v\,(4\,v + 1) / \alpha \,)$
@@ -229,18 +228,19 @@ is a point of order greater than 8.
 
 \subsection{Torsion group $\mathbb{Z}/4\mathbb{Z} \times \mathbb{Z}/4\mathbb{Z}$ over $\mathbb{Q}(i)$}
 
-We can try to extend the torsion group: we search for $Q$ such that $2\,Q = P = ((4\,v - 1)/8,\, 0)$.
+We can extend the torsion group: we search for $Q$ such that $2\,Q = P = ((4\,v - 1)/8,\, 0)$.
 
 From \cite[Theorem 4.2]{Knapp1}, $(4\,v - 1)/8 - (v^2 - 1/16) = -(4\,v - 1)^2 / 16$ and
 $(4\,v - 1)/8 - (-4\,v - 1)/8 = v$ must be squares. Then $v = w^2$, the field is
 $\mathbb{Q}(i)$ and the torsion group is $\mathbb{Z}/4\mathbb{Z} \times \mathbb{Z}/4\mathbb{Z}$.
 
-The equation is $48\,w^4 - 4\,w^2 = u^2$. Let $s = 2\,w$ and $t = u / s$, we have the modular curve
+The equation is $48\,w^4 - 4\,w^2 = u^2$. Let $s = 2\,w$ and $t = u / s$, the condition is
 $$3\,s^2 - 1 = t^2.$$
-It has genus 0 and $s = 0$, $t = i$ is a solution in $\mathbb{Q}(i)$. If $z = t - i$
+The curve has genus 0 and $s = 0$, $t = i$ is a solution in $\mathbb{Q}(i)$. If $z = t - i$
 and $s = \alpha\,z$ we have $z = 2\,i / (3\,\alpha^2 - 1)$ and $w = i\, \alpha / (3\,\alpha^2 - 1)$.
 
 \begin{theorem}
+Let $\alpha \in \mathbb{Q}\, \textbackslash \, \{0, \pm1/3, \pm1\}$.
 Define $v = -\alpha^2 / (3\,\alpha^2 - 1)^2$, $A = -((4\,v+1)^2 + 16\,v)$,
 $B = 16\,v\,(4\,v + 1)^2$. For any prime $p \equiv 1 \pmod{4}$,
 the order of $y^2 = x^3 + A\, x^2 + B\, x$ over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 16
@@ -259,82 +259,116 @@ Finally if $x_E = i\,(2\,w - 1)^2\,x_T$, $y_E = y_T$, we get the Edwards form
 $x_E^2 + y_E^2 = 1 + \left(\frac{2\,w + 1}{2\,w - 1}\right)^4\,x_E^2\,y_E^2$.
 
 \begin{theorem}
-Define
+Let $\alpha \in \mathbb{Q}\, \textbackslash \, \{0, \pm1/3, \pm1\}$. Define
 $$d = \left( \frac{3\,\alpha^2 + 2\,i\,\alpha - 1}{3\,\alpha^2 - 2\,i\,\alpha -1} \right)^4,\quad
 x_P = \frac{i \, (3\,\alpha^2 - 2\,i\,\alpha - 1)^2}{2\, \alpha\, (3\,\alpha^2 + 1)},\quad
 y_P = \frac{(\alpha - i)\,(3\,\alpha - i)}{(\alpha + i)\,(3\,\alpha + i)}.$$
 For any prime $p \equiv 1 \pmod{4}$, the order of $x^2 + y^2 = 1 + d\,x^2y^2$ over
 $\mathbb{Z}/p\mathbb{Z}$ is divisible by 16 and $(x_P,\,y_P)$ is a point of order greater than 16.
 \end{theorem}
+Note that for any divisor of $F_{12}$ we have $i \equiv 2^{2^{11}} \pmod{p}$.
 
+\subsection{Torsion group $\mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/8\mathbb{Z}$ over $\mathbb{Q}$}
 
-
-
-
-
-\iffalse
-
-We now suppose that $x = (v + 1) / 2$ is the abscissa of a rational point on the curve.
-We have $$1024\, y^2 = -640\, v^3 - 80\, v^2\, + 560\,v + 225.$$
-Let $t = 8640\,y$ and $s = -15\,(24\,v + 1)$. The new equation is
-$$t^2 = s^3 - 114075\,s + 14694750$$
-and $(129, 1458)$ is a non-torsion point on the curve.
-
-\begin{theorem}
-Let $(s, t) = n\cdot (129, 1458)$ on the modular curve $T^2 = S^3 - 114075\,S + 14694750$.
-Define $v = -(s + 15) / 360$ and $b = v^2 - 1/16$. Then for any prime $p > 3$ the order of
-$y^2 = x^3 + \frac{1 - 4\,b}{4}\, x^2 - \frac{b}{2}\, x + \frac{b^2}{4}$
-over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 8  and $(\left(v + 1\right) / 2,\, t / 8640)$
-is a point of infinite order.
-\end{theorem}
-
-By the coordinate changes $x = b\,(x_M + 1)$, $y = b\,y_M$, we get the Montgomery form
-$$\frac{1}{b}\,y_M^2 = x_M^3 + (2 + \frac{1}{4b})\,x_M^2 + x_M.$$
-
-The subgroup of order 4 is now $\{\,(-1, -1/2);\, (0, 0);\, (-1, 1/2);\, O\, \}$ and
-the subgroup of order 2 is $\{\,(-(4\,v - 1)/(4\,v + 1), 0);\, O\, \}$.
-
-The equivalence with a twisted Edwards curve is the map $x_T = x_M / y_M$,
-$y_T = (x_M - 1)/(x_M + 1)$,
-$$(\frac{1}{4} + 4\,b)\,x_T^2 + y_T^2 = 4\,v^2\,x_T^2 + y_T^2 = 1 + \frac{1}{4}\,x_T^2y_T^2.$$
-Finally if $x_E = 2\,v\,x_T$, $y_E = y_T$, $\alpha = 1 / (4\,v)$, we get the Edwards form
-$$x_E^2 + y_E^2 = 1 + \alpha^2\,x_E^2\,y_E^2.$$
-
-Note that the subgroup of order 4 is now $\{\,(1, 0);\, (0, -1);\, (-1, 0);\, O = (0, 1)\, \}$
-but the subgroup of order 2 is not defined because $x_E = 2\,v\,x_M / y_M$ and $y_M = 0$.
+Let $P = (0, 0)$ be a point of order 8 on the Tate normal form. We must have $5\,P = -3\,P$,
+this implies $x_{3P} = x_{5P}$. If $b = cr$ and $c = s\,(r - 1)$,
+we have $x_{3P} = c$ and $x_{5P} = r\,s\,(s - 1)$. The condition is
+$$b = cr = (r - 1)(2\,r - 1).$$
+$x_{4P} = r\,(r - 1)$. Since $2\,(x_{4P}, y_{4P}) = O$, $y_{4P} = 0$. The curve is 
+birationally equivalent to
+$$A = \frac{8\,r^4 - 16\,r^3 + 16\,r^2 - 8\,r + 1}{4\,r^2},\quad
+B = (r - 1)^4,\quad y^2 = x^3 + A\,x^2 + B\,x.$$
+The discriminant is
+$$\Delta = \frac{(r - 1)^8\, (2\,r - 1)^4\, (8\,r^2 - 8\,r + 1)}{r^4}.$$
+It must be a square: the condition is $u^2 = 8\,r^2 - 8\,r + 1$.
+The curve has genus 0 and $r = 0$, $u = 1$ is a solution. If $u - 1 = \alpha\,r$ we have
+$$r = (8 + 2\,\alpha) / (8 - \alpha^2).$$
+$P$ is a point of order 8 and $Q \neq 4\,P$ is a point of order 2 where
+$$P = \left(-(r - 1)\,r,\, (r - 1)\,(2\,r - 1) / 2\right),\quad
+  Q = \left(-\frac{\alpha^4\,(4 + \alpha)^2}{16\,(8 - \alpha^2)^2},\, 0\right).$$
+We search for $x$ such that $x + A + B / x$ is a square. We take
+$x = -(2\,r - 1)/2 - r\,(r - 1)$ then
+the condition is $(1 - 2\,r)^4 / (4\,r^2\,(1 - 2\,r^2)) = u^2$ and
+$1 - 2\,r^2 = (\alpha^4 - 24\,\alpha^2 - 64\,\alpha - 64) / (\alpha^2 - 8)^2$
+must be a square. The equation
+$$Y^2 = X^4 - 24\,X^2 - 64\,X - 64$$
+is birationally equivalent to
+$$T^2 = S^3 + 4\,S - 16,\quad X = (T + 8) / (S - 4),\quad Y = -X^2 + 2\,S + 4.$$
+$(4,\, 8)$ is a point of infinite order $T^2 = S^3 + 4\,S - 16$.
 
 \begin{theorem}
-Let $(s, t) = n\cdot (129, 1458)$ on the modular curve $T^2 = S^3 - 114075\,S + 14694750$.
-Define $\alpha = 90 / (s + 15)$. Then for any prime $p > 3$ the order of
-$x^2 + y^2 = 1 + \alpha^2\,x^2y^2$ over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 8
-and $(270\, (9\,\alpha^2 - 2\,\alpha - 1)\, /\, (\alpha^3\,t),\,
-(5\,\alpha^2 - \alpha - 1)\, /\, (\alpha\, (4\,\alpha - 1)))$
-is a point of infinite order.
+Let $(s, t)$ be a multiple of $(4, 8)$ on the curve $t^2 = s^3 + 4\,s - 16$. If
+$s \neq 4$  define
+$$\alpha = \frac{t + 8}{s - 4},\quad r = \frac{8 + 2\,\alpha}{8 - \alpha^2},\quad
+A = \frac{8\,r^4 - 16\,r^3 + 16\,r^2 - 8\,r + 1}{4\,r^2},\quad
+B = (r - 1)^4.$$
+For any prime $p > 3$ the order of $y^2 = x^3 + A\, x^2 + B\, x$ over $\mathbb{Z}/p\mathbb{Z}$
+is divisible by 16 and $(1/2 - r^2,
+(2\,r - 1)^2\, (\alpha^2 - 2\,s - 4) / (4\,r\,(8 - \alpha^2))\,)$ is
+a point of order greater than 16.
 \end{theorem}
 
-\bigskip
+The equivalence with a twisted Edwards curve is the map $x = \sqrt{B}\,x_M$, $y = \sqrt{B}\,y_M$,
+$x_T = x_M / y_M$, $y_T = (x_M - 1)/(x_M + 1)$,
+$$(A + 2\,\sqrt{B})\,x_T^2 + y_T^2 = 1 + (A - 2\sqrt{B})\,x_T^2y_T^2.$$
+We have $A + 2\,\sqrt{B} = (2\,r - 1)^4 / (4\,r^2)$ and
+$A - 2\,\sqrt{B} = (8\,r^2 - 8\,r + 1) / (4\,r^2)$.
+Finally if $x_E = \frac{(2\,r - 1)^2}{2\,r}\,x_T$, $y_E = y_T$, we get the Edwards form
+$x_E^2 + y_E^2 = 1 + \frac{8\,r^2 - 8\,r + 1}{(2\,r - 1)^4} x_E^2y_E^2$.
 
-From
-$$1024\, y^2 = 1024\,x^3 + (320 - 1024\,v^2)\, x^2 + (32 - 512\,v^2)\, x
-+ 256\,v^4 - 32\,v^2 + 1.$$
-define $x = z + (-4\,v - 1)/8$, we have
-$$64\, y^2 = 64\, z^3 - 4\,(16\,v^2 + 24\,v + 1)\, z^2 + 4\,v\,(4\,v + 1)^2\, z.$$
-A coordinate transform leads to 
-$$y^2 = x^3 - (16\,v^2 + 24\,v + 1)\, x^2 + 16\,v\,(4\,v + 1)^2\, x.$$
+\begin{theorem}
+Let $(s, t)$ be a multiple of $(4, 8)$ on the curve $t^2 = s^3 + 4\,s - 16$. If
+$s \neq 4$  define
+$$\alpha = \frac{t + 8}{s - 4},\quad r = \frac{8 + 2\,\alpha}{8 - \alpha^2},\quad
+d = \frac{8\,r^2 - 8\,r + 1}{(2\,r - 1)^4},\quad
+x_P = \frac{(8 - \alpha^2)\,(2\,r^2 - 1)}{2\,s - \alpha^2 + 4},\quad
+y_P = \frac{(2\,r - 1)^2}{4\,r - 3}.$$
+For any prime $p > 3$ the order of $x^2 + y^2 = 1 + d\,x^2y^2$ over $\mathbb{Z}/p\mathbb{Z}$
+is divisible by 16 and $(x_P,\,y_P)$ is a point of order greater than 16.
+\end{theorem}
 
+\subsection{Torsion group $\mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/10\mathbb{Z}$ over $\mathbb{Q}(\zeta_8)$}
 
-$$y^2 + 4\, x y - (64\,v^2 - 4)\,y = x^3 - (16\,v^2 - 1)\, x^2.$$
+Let $P = (0, 0)$ be a point of order 10 on the Tate normal form. We must have $6\,P = -4\,P$,
+this implies $x_{4P} = x_{6P}$. If $b = cr$ and $c = s\,(r - 1)$,
+we have $x_{4P} = r\,(r - 1)$ and $x_{6P} = s\,(r - 1)\,(r - s) / (s - 1)^2$.
+The condition is
+$$s^2 = (s - (s - 1)^2)\,r.$$
+$x_{5P} = r\,s\,(s - 1)$. Since $2\,(x_{5P}, y_{5P}) = O$, $y_{5P} = 0$. The curve is 
+birationally equivalent to
+$$A = -\frac{(2\,s^2 - 2\,s + 1)\,(4\,s^4 - 12\,s^3 + 6\,s^2 + 2\,s - 1)}{4\,(s^2 - 3\,s + 1)^2},\quad
+B = \frac{(s - 1)^5\, s^5}{(s^2 - 3\,s + 1)^3},\quad y^2 = x^3 + A\,x^2 + B\,x.$$
+The discriminant is
+$$\Delta = \frac{(s-1)^{10}\,s^{10}\,(2\,s - 1)^5\,(4\,s^2 - 2\,s - 1)}{(s^2 - 3\,s + 1)^{10}}.$$
+It must be a square: the condition is $u^2 = (2\,s - 1)\,(4\,s^2 - 2\,s - 1)$.
+Define $t = 2\,s - 1$, we have
+$$A = -\frac{(t^2 + 1)\,(t^4 - 2\,t^3 - 6 \,t^2 + 2\,t + 1)}{2\,(t^2 - 4\,t - 1)^2},\quad
+B = \frac{(t - 1)^5\,(t + 1)^5}{16\,(t^2 - 4\,t - 1)^3}.$$
+$$\Delta = \frac{(t^2 - 1)^{10}\,t^4\,u^2}{(t^2 - 4\,t - 1)^{10}},\quad
+u^2 = t^3 + t^2 - t.$$
+$P$ is a point of order 10 and $Q \neq 5\,P$ is a point of order 2 where
+$$P = \left(\frac{(t - 1)\,(t + 1)^3}{4\,(t^2 - 4\,t - 1)},\,
+            \frac{(t - 1)\,t\,(t + 1)^3}{2\,(t^2 - 4\,t - 1)^2}\right),\quad
+  Q = \left(\frac{8\,t^2\,u + t^6 - 2\,t^5 - 5\,t^4 - 5\,t^2 + 2\,t + 1}
+                 {4\,(t^2 - 4\,t - 1)^2},\, 0\right).$$
 
-From
-$$y^2 = x^3 + \frac{1 - 4\,b}{4}\, x^2 - \frac{b}{2}\, x + \frac{b^2}{4}.$$
-$x = x_s + b, y = y_s$:
-$$y_s^2 = x_s^3 + \frac{8\,b + 1}{4}\, x_s^2 + b^2\, x_s.$$
-$$y_s^2 = x_s^3 + (2\,v^2 + 1/8)\, x_s^2 + (v^4 - v^2/8 + 1/256)\, x_s.$$
-$$4096\,y_s^2 = 4096\,x_s^3 + 4096\,(2\,v^2 + 1/8)\, x_s^2 + 4096\,(v^4 - v^2/8 + 1/256)\, x_s.$$
-$$y^2 = x^3 + (32\,v^2 + 2)\, x_s^2 + (256\,v^4 - 32\,v^2 + 1)\, x_s.$$
-$$y^2 = x^3 + (32\,v^2 + 2)\, x_s^2 + (4\,v - 1)^2\, (4\,v + 1)^2\, x_s.$$
+The modular curve $u^2 = t^3 + t^2 - t$ has genus 1. It has six rational points
+$(-1, \pm1)$, $(0, 0)$, $(1, \pm1), O$ over $\mathbb{Q}$ and all of them generate a singular curve.
+Over quadratic fields, we find the trivial solution $(-2, \sqrt{-2})$. It is a point of
+infinite order over $\mathbb{Q}(\sqrt{-2}) = \mathbb{Q}(\zeta_8)$.
 
-\fi
+\begin{theorem}
+Let $p$ be a prime such that $p \equiv 1, 3 \pmod{8}$ and $(t, u)$ be a multiple
+of $(-2, \sqrt{-2})$ on the curve $u^2 = t^3 + t^2 - t$ over $\mathbb{Z}/p\mathbb{Z}$.
+Define
+$$A = -\frac{(t^2 + 1)\,(t^4 - 2\,t^3 - 6 \,t^2 + 2\,t + 1)}{2\,(t^2 - 4\,t - 1)^2},\quad
+B = \frac{(t - 1)^5\,(t + 1)^5}{16\,(t^2 - 4\,t - 1)^3}.$$
+The order of $y^2 = x^3 + A\,x^2 + B\,x$ over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 20.
+\end{theorem}
+Note that for any divisor of $F_{12}$ we have $\sqrt{i} \equiv 2^{2^{10}} \pmod{p}$ and
+$\sqrt{-2} = \sqrt{i} + \sqrt{i}^3$.
+The rank of the elliptic curve still has to be calculated and if it is different from 0
+a point of infinite order must be found.
 
 \chapter{Elliptic Curve Method}
 
