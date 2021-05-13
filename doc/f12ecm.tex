@@ -302,9 +302,9 @@ $s \neq 4$  define
 $$\alpha = \frac{t + 8}{s - 4},\quad r = \frac{8 + 2\,\alpha}{8 - \alpha^2},\quad
 A = \frac{8\,r^4 - 16\,r^3 + 16\,r^2 - 8\,r + 1}{4\,r^2},\quad
 B = (r - 1)^4.$$
-For any prime $p > 3$ the order of $y^2 = x^3 + A\, x^2 + B\, x$ over $\mathbb{Z}/p\mathbb{Z}$
-is divisible by 16 and $(1/2 - r^2,
-(2\,r - 1)^2\, (\alpha^2 - 2\,s - 4) / (4\,r\,(8 - \alpha^2))\,)$ is
+For any prime $p > 3$, if $r \not\equiv 0, 1/2, 1 \pmod p$ then the order of
+$y^2 = x^3 + A\, x^2 + B\, x$ over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 16 and
+$(1/2 - r^2, (2\,r - 1)^2\, (\alpha^2 - 2\,s - 4) / (4\,r\,(8 - \alpha^2))\,)$ is
 a point of order greater than 16.
 \end{theorem}
 
@@ -323,9 +323,35 @@ $$\alpha = \frac{t + 8}{s - 4},\quad r = \frac{8 + 2\,\alpha}{8 - \alpha^2},\qua
 d = \frac{8\,r^2 - 8\,r + 1}{(2\,r - 1)^4},\quad
 x_P = \frac{(8 - \alpha^2)\,(2\,r^2 - 1)}{2\,s - \alpha^2 + 4},\quad
 y_P = \frac{(2\,r - 1)^2}{4\,r - 3}.$$
-For any prime $p > 3$ the order of $x^2 + y^2 = 1 + d\,x^2y^2$ over $\mathbb{Z}/p\mathbb{Z}$
-is divisible by 16 and $(x_P,\,y_P)$ is a point of order greater than 16.
+For any prime $p > 3$, if $d \not\equiv 0, \pm1 \pmod p$ then the order of
+$x^2 + y^2 = 1 + d\,x^2y^2$ over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 16
+and $(x_P,\,y_P)$ is a point of order greater than 16.
 \end{theorem}
+
+\subsection{Torsion group $\mathbb{Z}/4\mathbb{Z} \times \mathbb{Z}/8\mathbb{Z}$ over $\mathbb{Q}(\zeta_8)$}
+
+We can try to extend the torsion group: we search for $R$ such that
+$2\,R = Q = \left(-\frac{\alpha^4\,(4 + \alpha)^2}{16\,(8 - \alpha^2)^2},\, 0\right)$
+on the curve
+$$y^2 = x\, \left(x - \frac{-\alpha^4\,(4 + \alpha)^2}{16\,(8 - \alpha^2)^2} \right)\,
+ \left(x - \frac{-16\,(2 + \alpha)^4}{(4 + \alpha)^2\,(8 - \alpha^2)^2} \right).$$
+
+From \cite[Theorem 4.2]{Knapp1},
+$$-\frac{\alpha^4\,(4 + \alpha)^2}{16\,(8 - \alpha^2)^2} \quad \text{and} \quad
+-\frac{\alpha^4\,(4 + \alpha)^2}{16\,(8 - \alpha^2)^2}
+ - \frac{-16\,(2 + \alpha)^4}{(4 + \alpha)^2\,(8 - \alpha^2)^2}
+ = \frac{(\alpha^2 + 4\,\alpha + 8)^2\,(\alpha^2 + 8\,\alpha + 8)}{16\,(\alpha+4)^2\,(8 - \alpha^2)}$$
+must be squares.\\
+If the field is $\mathbb{Q}(i)$ the condition is $x^2 + 8\,x + 8 = y^2\,(x^2 - 8)$.
+If $Y = y\,(x^2 - 8)$ and $X = x + 2$ we have $Y^2 = X^4 - 24\,X^2 + 16$. This curve is
+birationally equivalent to $T^2 = S^3 - S$ via the formulas $X = 2\,T / (S - 1)$ and
+$Y = -X^2 + 8\,S + 4$. Then the modular curve $X_1(4, 8)$ is isomorphic over $\mathbb{Q}(i)$ to
+the elliptic curve with Cremona label 32a2. Over $\mathbb{Q}(\zeta_8)$ its Mordell-Weil group
+structure is $\mathbb{Z}/4\mathbb{Z} \times \mathbb{Z}/4\mathbb{Z}$. All the points generate
+a singular curve.
+
+No elliptic curve over $\mathbb{Q}(\zeta_8)$ exists with a subgroup isomorphic to
+$\mathbb{Z}/4\mathbb{Z} \times \mathbb{Z}/8\mathbb{Z}$.
 
 \subsection{Torsion group $\mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/10\mathbb{Z}$ over $\mathbb{Q}(\zeta_8)$}
 
