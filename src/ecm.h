@@ -142,7 +142,7 @@ private:
 			{
 				for (size_t i = 0; i < v_size; ++i)
 				{
-					const mpz_class d = EC_e<VComplex>::d_12(i, sigma + i, F_12, P_e);
+					const mpz_class d = EC_e<VComplex>::d_16g(i, sigma + i, F_12, P_e);
 					ec_e.set(i, d);
 
 					mpz_class den = 1 - d; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), F_12.get_mpz_t());

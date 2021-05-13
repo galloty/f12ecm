@@ -103,7 +103,7 @@ public:
 	// Daniel J. Bernstein; Tanja Lange; Peter Birkner; Christiane Peters, ECM using Edwards curves, § 7.7
 
 	// Montgomery construction: the group order of Edwards curve is divisible by 12
-	static mpz_class d_12(const size_t i, const uint64_t m, const mpz_class & n, Point & P0)
+	static mpz_class d_12m(const size_t i, const uint64_t m, const mpz_class & n, Point & P0)
 	{
 		// (s, t) = m * [-2, 4] on t^2 = s^3 − 12*s (modulo n)
 		mpz_class s, t;
@@ -130,7 +130,7 @@ public:
 	}
 
 	// Atkin-Morain construction: the group order of Edwards curve is divisible by 16
-	static mpz_class d_16(const size_t i, const uint64_t m, const mpz_class & n, Point & P0)
+	static mpz_class d_16am(const size_t i, const uint64_t m, const mpz_class & n, Point & P0)
 	{
 		// (s, t) = m * [12, 40] on t^2 = s^3 − 8*s - 32 (modulo n)
 		mpz_class s, t;
@@ -160,6 +160,38 @@ public:
 		mpz_class y = (t1 * (sqr_mod(t, n) + 50 * t - 2 * cub_mod(s, n) + 27 * sqr_mod(s, n) - 104)) % n;
 		y = (y * den) % n;
 		if (y < 0) y += n;
+
+		P0.set(i, x, y);
+		return d;
+	}
+
+	// Gallot construction: the group order of Edwards curve is divisible by 16
+	static mpz_class d_16g(const size_t i, const uint64_t m, const mpz_class & n, Point & P0)
+	{
+		// (s, t) = m * [4, 8] on t^2 = s^3 + 4*s - 16 (modulo n)
+		mpz_class s, t;
+		EC_modular<4>::get(m, 4, 8, n, s, t);
+
+		mpz_class den;
+
+		den = s - 4; if (den < 0) den += n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		const mpz_class alpha = ((t + 8) * den) % n;
+		const mpz_class alpha2 = sqr_mod(alpha, n); 
+
+		den = 8 - alpha2; if (den < 0) den += n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		const mpz_class r = ((8 + 2 * alpha) * den) % n;
+		const mpz_class t1 = sqr_mod(2 * r - 1, n);
+
+		mpz_class d = (8 * r * (r - 1) + 1) % n; if (d < 0) d += n;
+		den = sqr_mod(t1, n); mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		d = (d * den) % n;
+
+		mpz_class x = ((8 - alpha2) * (2 * r * r - 1)) % n;
+		den = 2 * s - alpha2 + 4; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		x = (x * den) % n; if (x < 0) x += n;
+
+		den = 4 * r - 3; if (den < 0) den += n; mpz_invert(den.get_mpz_t(), den.get_mpz_t(), n.get_mpz_t());
+		const mpz_class y = (t1 * den) % n;
 
 		P0.set(i, x, y);
 		return d;
