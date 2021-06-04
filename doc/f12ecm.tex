@@ -38,6 +38,13 @@
 \counterwithin{figure}{chapter}
 \counterwithin{table}{chapter}
 
+\hypersetup{
+  linkcolor  = .,
+  citecolor  = blue,
+  urlcolor   = blue,
+  colorlinks = true,
+}
+
 \makeatletter
 \renewcommand*{\thetable}{\arabic{chapter}.\arabic{table}}
 \renewcommand*{\thefigure}{\arabic{chapter}.\arabic{figure}}
@@ -48,6 +55,8 @@
 \newcommand\B{\rule[-1.4ex]{0pt}{0pt}} 
 
 \DeclareMathOperator{\ord}{ord}
+\DeclareMathOperator{\val}{val}
+\DeclareMathOperator{\Prob}{Prob}
 
 \begin{document}
 
@@ -116,7 +125,7 @@ The smallest Fermat number which is not completely factored is $F_{12}$. Six pri
 
 \chapter{Elliptic curves}
 
-\section{Elliptic curves modulo $p$}
+\section{Elliptic curves over $\mathbb{Z}/p\mathbb{Z}$}
 
 An elliptic curve over a field $K$ is a set of points in $K^2$ on the curve
 $$y^2 + a_1\, x y + a_3\, y = x^3 + a_2\, x^2 + a_4\, x + a_6,$$
@@ -139,8 +148,7 @@ points. If $\#E$ is the order of the group of an elliptic curve $E$ over $\mathb
 then
 $$|\#E - (p + 1) | \le 2\sqrt{p}.$$
 Given a prime $p > 3$ and any integer $n$ such that $|n - (p + 1)| \le 2\sqrt{p}$, there exists
-$a$ and $b$ such that $|\#E(a, b)| = n$. Furthermore, the numbers of points are uniformly
-distributed over the interval $[p + 1 - 2\sqrt{p},\, p + 1 + 2\sqrt{p}]$.
+$a$ and $b$ such that $|\#E(a, b)| = n$.
 
 To avoid the time-consuming inversion over $\mathbb{Z}/p\mathbb{Z}$, projective coordinates
 are preferred for computations. $X, Y, Z$ are integers such that $x = X/Z$ and $y = Y/Z$.
@@ -345,7 +353,7 @@ must be squares.\\
 If the field is $\mathbb{Q}(i)$ the condition is $x^2 + 8\,x + 8 = y^2\,(x^2 - 8)$.
 If $Y = y\,(x^2 - 8)$ and $X = x + 2$ we have $Y^2 = X^4 - 24\,X^2 + 16$. This curve is
 birationally equivalent to $T^2 = S^3 - S$ via the formulas $X = 2\,T / (S - 1)$ and
-$Y = -X^2 + 8\,S + 4$. Then the modular curve $X_1(4, 8)$ is isomorphic over $\mathbb{Q}(i)$ to
+$Y = -X^2 + 8\,S + 4$. Then the modular curve $X_1(4, 8)$ is over $\mathbb{Q}(i)$
 the elliptic curve with Cremona label 32a2. Over $\mathbb{Q}(\zeta_8)$ its Mordell-Weil group
 structure is $\mathbb{Z}/4\mathbb{Z} \times \mathbb{Z}/4\mathbb{Z}$. All the points generate
 a singular curve.
@@ -353,7 +361,7 @@ a singular curve.
 No elliptic curve over $\mathbb{Q}(\zeta_8)$ exists with a subgroup isomorphic to
 $\mathbb{Z}/4\mathbb{Z} \times \mathbb{Z}/8\mathbb{Z}$.
 
-\subsection{Torsion group $\mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/10\mathbb{Z}$ over $\mathbb{Q}(\zeta_8)$}
+\subsection{Torsion group $\mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/10\mathbb{Z}$ over $\mathbb{Q}(\sqrt{-2})$}
 
 Let $P = (0, 0)$ be a point of order 10 on the Tate normal form. We must have $6\,P = -4\,P$,
 this implies $x_{4P} = x_{6P}$. If $b = cr$ and $c = s\,(r - 1)$,
@@ -378,10 +386,11 @@ $$P = \left(\frac{(t - 1)\,(t + 1)^3}{4\,(t^2 - 4\,t - 1)},\,
   Q = \left(\frac{8\,t^2\,u + t^6 - 2\,t^5 - 5\,t^4 - 5\,t^2 + 2\,t + 1}
                  {4\,(t^2 - 4\,t - 1)^2},\, 0\right).$$
 
-The modular curve $u^2 = t^3 + t^2 - t$ has genus 1. It has six rational points
-$(-1, \pm1)$, $(0, 0)$, $(1, \pm1), O$ over $\mathbb{Q}$ and all of them generate a singular curve.
+The modular curve $X_1(2, 10)$ is the elliptic curve with Cremona label 20a2.
+$u^2 = t^3 + t^2 - t$ has six rational points $(-1, \pm1)$, $(0, 0)$, $(1, \pm1), O$
+over $\mathbb{Q}$ and all of them generate a singular curve.
 Over quadratic fields, we find the trivial solution $(-2, \sqrt{-2})$. It is a point of
-infinite order over $\mathbb{Q}(\sqrt{-2}) = \mathbb{Q}(\zeta_8)$.
+infinite order over $\mathbb{Q}(\sqrt{-2})$.
 
 \begin{theorem}
 Let $p$ be a prime such that $p \equiv 1, 3 \pmod{8}$ and $(t, u)$ be a multiple
@@ -604,6 +613,77 @@ $$\frac{P(B_2, B_1)}{K\cdot B_1 + B_2 / \log B_2}.$$
 	\caption{\label{fig:B12_dgt} Optimal $B_2, B_1$ and number of curves as a function of the number of digits.}
 \end{figure}
 
+\subsection{Smoothness of the number of points of elliptic curves over $\mathbb{Z}/p\mathbb{Z}$}
+
+All families of elliptic curves are not equivalent for ECM. The \textit{quality} depends on the
+proportion of primes for which $\#E$ is $B$-smooth.
+
+Let $\mathcal{E}(p)$ be a family of curve over $\mathbb{Z}/p\mathbb{Z}$ and
+$R(p) = [p - 2\sqrt{p};\, p + 2\sqrt{p}]$. If $E \in \mathcal{E}(p)$ then $\#E \in R(p)$.
+In that range we can count the proportion $\mathcal{P}$ of curves such that $\#E$ is $B$-smooth.
+This value is not equal to the proportion of $B$-smooth integers in the range (because almost all
+elliptic curves have surjective Galois image at all primes). But it is conjectured that there exists
+a factor $f(\mathcal{E}, p, B)$ such that if $n = f(\mathcal{E}, p, B)\,p$ then $\mathcal{P}$
+is equal to the proportion of $B$-smooth integers in $R(n)$ \cite[§ 5]{BarbulescuShinde1}.
+It is also conjectured that $f(\mathcal{E}, p, B)$ converges uniformly to $f(\mathcal{E}, p)$
+when $B$ go to infinity.
+We have
+$$\Prob(\#E \text{ is } B\text{-smooth } |\text{ } \#E \in \mathcal{E}(p)) \approx
+ \Prob(n \text{ is } B\text{-smooth } |\text{ } n \sim f(\mathcal{E}, p)\,p).$$
+Let $q$ be a prime number, we define the average valuation at $q$ of $\mathcal{E}(p)$ by
+$$\overline{\val_q}(\mathcal{E}(p)) = \sum_{n \geq 1} n \cdot \Prob(\val_q(\#E) = n
+ \text{ }|\text{ } E \in \mathcal{E}(p)).$$
+The average valuation of an integer is
+$$\overline{\val_q}(\mathbb{N})
+ = \sum_{n \geq 1} n \cdot \Prob(\val_q(m) = n \text{ }|\text{ } m \in \mathbb{N})
+ = \sum_{n \geq 1} n \cdot \frac{q - 1}{q^{n+1}} = \frac{1}{q - 1}.$$
+Hence
+$$f(\mathcal{E}, p) = \prod_{q\text{ prime}}
+ \frac{q^{\overline{\val_q}(\mathbb{N})}}{q^{\overline{\val_q}(\mathcal{E}(p))}}
+ = \prod_{q\text{ prime}} q^{1/(q - 1)\, -\, \overline{\val_q}(\mathcal{E}(p))}.$$
+Note that $\overline{\val_q}(\mathcal{E}(p))$ depends on the prime factors of $p - 1$.
+For example, let $p > 1728$, $\mathcal{E}_j(p)$ be the curves over $\mathbb{Z}/p\mathbb{Z}$:
+\begin{equation*}
+y^2 = \begin{cases}
+\,x^3 - 1 &\quad \text{if } j = 0 \text{,}\\
+\,x^3 - x &\quad \text{if } j = 1728 \text{,}\\
+\,x^3 - 3\,c\,x + 2\,c &\quad c = j / (j - 1728)\quad \text{otherwise.}
+\end{cases}
+\end{equation*}
+Define
+\begin{align*}
+P_q(n) &= \lim_{N \to \infty} \frac{1}{N} \sum_{i = 1}^N \Prob(\val_q(\mathcal{E}_j(p_i)) = n,
+ |\text{ } p_i \not\equiv 1\, (\text{mod}\,2q)),\\
+Q_q(n) &= \lim_{N \to \infty} \frac{1}{N} \sum_{i = 1}^N \Prob(\val_q(\mathcal{E}_j(p_i)) = n,
+ |\text{ } p_i \equiv 1\, (\text{mod}\,2q)).
+\end{align*}
+We have $P_2(0) = Q_2(0) = 1/3$, $P_2(1) = Q_2(1) = 1/4$, $P_2(2) = 1/6$, $Q_2(2) = 5/24$ and
+if $n \geq 3$ then $P_2(n) = 1/2^n$ and $Q_2(n) = (2^{n-1} - 1) / 2^{2n - 1}$. For $q \geq 3$
+we have $P_q(0) = (q - 2)/(q - 1)$, $Q_q(0) = (1 - q) / (q^2 - 1)$ and if $n \geq 1$ then
+$P_q(n) = 1/q^n$ and $Q_q(n) = (q^n - 1)/q^{2n}$.
+
+If $p \not\equiv 1 \pmod{4}$ then $\overline{\val_2}(\mathcal{E}_j(p)) = 1/4 + 1/3
+ + \sum_{n \geq 3} n / 2^n = 19 / 12$ and if $p \equiv 1 \pmod{4}$ then
+ $\overline{\val_2}(\mathcal{E}_j(p)) = 1/4 + 5/12 + \sum_{n \geq 3} n\, (2^{n-1} - 1) / 2^{2n - 1}
+ = 55 / 36$.
+ 
+For $q \geq 3$ if $p \not\equiv 1 \pmod{q}$ then $\overline{\val_q}(\mathcal{E}_j(p))
+ = \sum_{n \geq 1} n / q^n = q / (q - 1)^2$ and if $p \equiv 1 \pmod{q}$ then
+$\overline{\val_q}(\mathcal{E}_j(p)) = \sum_{n \geq 1} n\, (q^n - 1)/q^{2n}
+ = q\, (q^2 + q + 1) / (q^2 - 1)^2$.
+
+We define
+$$\overline{\val_q}(\mathcal{E})
+ = \lim_{N \to \infty} \frac{1}{N} \sum_{i = 1}^N \overline{\val_q}(\mathcal{E}(p_i)).$$
+If $R_q(n) = \lim_{N \to \infty} \frac{1}{N} \sum_{i = 1}^N \Prob(\val_q(\mathcal{E}_j(p_i)) = n)$,
+we have $R_q(n) = \frac{(q - 1)\,q^n - 1}{(q - 1)\,q^{2n}}$.
+Then $\overline{\val_q}(\mathcal{E}_j) = \sum_{n \geq 1} n\, R_q(n) =
+\frac{q\, (q^3 + q^2 - 2\,q - 1)}{(q - 1)\,(q^2 - 1)^2}$.
+
+The cardinality of an elliptic curve has more chances of being smooth than a random integer
+of the same size: $f(\mathcal{E}_j) =
+ \prod_{q\text{ prime}} q^{1/(q - 1)\, -\, \overline{\val_q}(\mathcal{E}_j)} \approx 0.44397024$.
+
 \subsection{ECM and $F_{12}$}
 
 The present status is
@@ -680,6 +760,10 @@ d &= (1.8 + 0.79\, \log i)^{5/3}.
 
 \bibitem{BachShallit1} Eric~Bach and Jeffrey~Shallit, \emph{Factoring with cyclotomic polynomials},
 Math. Comp. \textbf{52} (1989), 201--219, DOI: \url{https://doi.org/10.1090/S0025-5718-1989-0947467-1}.
+
+\bibitem{BarbulescuShinde1} Razvan~Barbulescu and Sudarshan~Shinde, \emph{A classification
+of ECM-friendly families using modular curves}, intégré à la thèse de doctorat de Sudarshan Shinde,
+Sorbonne Université, 10 juillet 2020, \url{https://hal.archives-ouvertes.fr/hal-01822144v2}.
 
 \bibitem{Brent1} Richard~P.~Brent, \emph{Factorization of the tenth Fermat number}, Math. Comp.
 \textbf{68} (1999), 429--451, DOI: \url{https://doi.org/10.1090/S0025-5718-99-00992-8}.
