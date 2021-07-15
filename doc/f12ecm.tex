@@ -161,7 +161,7 @@ some alternative representations of elliptic curves. Some of them are faster for
 
 One of {\scshape f\textsubscript{12}ecm} representations is the Montgomery curve
 $$B\,y^2 = x^3 + A\,x^2 + x,$$
-where $A \neq \pm2, B \neq 0$. 
+where $A \neq \pm2$ and $B \neq 0$. 
 The Montgomery curves are a subset of elliptic curves. The order of a Montgomery curve over
 $\mathbb{Z}/p\mathbb{Z}$ is always divisible by 4.
 
@@ -208,7 +208,7 @@ The subgroup of order 4 is $\{\,(0, -b/2);\, (b, 0);\, (0, b/2);\, O\, \}$.
 
 If $2\,P = O$ then the $y$-coordinate of $P$ is zero. The $x$-solutions are
 $b,\, (\pm\sqrt{16 b+1} - 1)/8$. Define $b = v^2 - 1/16$. The two new solutions are
- $(\pm4\,v - 1)/8$. $\{\,((4\,v - 1)/8,\, 0);\, O\, \}$ is a new subgroup of order 2
+ $(\pm4\,v - 1)/8$. $\{\,(4\,v - 1)/8,\, 0);\, O\, \}$ is a new subgroup of order 2
 and $((-4\,v - 1)/8,\, 0) = ((4\,v - 1)/8,\, 0) + (b,\, 0)$.
 We have
 $$y^2 = \left(x - \left(v^2 - \frac{1}{16}\right)\right)\,
@@ -266,7 +266,7 @@ We have $A \pm 2\,\sqrt{B} = -(4\,w^2+1 \mp 4\,w)^2
 Finally if $x_E = i\,(2\,w - 1)^2\,x_T$, $y_E = y_T$, we get the Edwards form
 $x_E^2 + y_E^2 = 1 + \left(\frac{2\,w + 1}{2\,w - 1}\right)^4\,x_E^2\,y_E^2$.
 
-\begin{theorem}
+\begin{theorem} \label{Th_4x4}
 Let $\alpha \in \mathbb{Q}\, \textbackslash \, \{0, \pm1/3, \pm1\}$. Define
 $$d = \left( \frac{3\,\alpha^2 + 2\,i\,\alpha - 1}{3\,\alpha^2 - 2\,i\,\alpha -1} \right)^4,\quad
 x_P = \frac{i \, (3\,\alpha^2 - 2\,i\,\alpha - 1)^2}{2\, \alpha\, (3\,\alpha^2 + 1)},\quad
@@ -324,7 +324,7 @@ $A - 2\,\sqrt{B} = (8\,r^2 - 8\,r + 1) / (4\,r^2)$.
 Finally if $x_E = \frac{(2\,r - 1)^2}{2\,r}\,x_T$, $y_E = y_T$, we get the Edwards form
 $x_E^2 + y_E^2 = 1 + \frac{8\,r^2 - 8\,r + 1}{(2\,r - 1)^4} x_E^2y_E^2$.
 
-\begin{theorem}
+\begin{theorem} \label{Th_2x8}
 Let $(s, t)$ be a multiple of $(4, 8)$ on the curve $t^2 = s^3 + 4\,s - 16$. If
 $s \neq 4$  define
 $$\alpha = \frac{t + 8}{s - 4},\quad r = \frac{8 + 2\,\alpha}{8 - \alpha^2},\quad
@@ -361,6 +361,41 @@ a singular curve.
 No elliptic curve over $\mathbb{Q}(\zeta_8)$ exists with a subgroup isomorphic to
 $\mathbb{Z}/4\mathbb{Z} \times \mathbb{Z}/8\mathbb{Z}$.
 
+\subsection{Torsion group $\mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/6\mathbb{Z}$ over $\mathbb{Q}$}
+
+Let $P = (0, 0)$ be a point of order 6 on the Tate normal form. We must have $4\,P = -2\,P$,
+this implies $x_{4P} = x_{2P}$. If $b = cr$, we have $x_{2P} = b$ and $x_{4P} = r\,(r - 1)$.
+The condition is $b = r\,(r - 1)$ and then $c = r - 1$. The equation is
+$$y^2 = x^3 + \frac{4 - 3\,r^2}{4}\, x^2 + \frac{2\,r^3 - 6\,r^2 + 4\,r}{4}\, x
+ + \frac{r^4 - 2\,r^3 + r^2}{4}$$
+and the subgroup of order 6 is $\{\,(0, -b/2);\, (b, bc/2);\, (c, 0);\, (b, -bc/2);\, (0, b/2);\, O\, \}$.
+
+The curve is birationally equivalent to
+$$A = -\frac{3\,r^2 - 12\,r + 8}{4},\quad B = -(r-1)^3,\quad y^2 = x^3 + A\,x^2 + B\,x$$
+and if $2\,P = O$ then the $y$-coordinate of $P$ is zero. The $x$-solutions are
+$0,\, -A/2 \pm r\,\sqrt{9\,r^2 - 8\,r}\,/\,8$.
+If $r = 8/(9 - \alpha^2)$ then $\sqrt{9\,r^2 - 8\,r} = -\alpha\,r$.
+
+$P$ is a point of order 6 and $Q \neq 3\,P$ is a point of order 2 where
+$$P = \left(1 - r,\, r\,(1 - r) / 2\right),\quad
+  Q = \left(\frac{(\alpha + 1)^3}{(\alpha - 3)\,(\alpha + 3)^2},\, 0\right).$$
+  
+We search for $x$ such that $x + A + B / x$ is a square. We take $x = 1 - 9/8\,r$ then
+$\frac{r^2\,(10\,r - 9)}{8\,(9\,r - 8)} = \frac{9\,\alpha^2 - 1}{\alpha^2\, (\alpha^2 - 9)^2}$
+must be a square. If $\alpha = \frac{9 + \beta^2}{3\,(9 - \beta^2)}$ then
+$P = \left(\,x,\, \frac{81\, \beta\, (\beta^2 + 9)\, (\beta^2 - 9)^2}{(8\, 4\,\beta^2 - 45)^2\, (5\,\beta^2 - 36)^2}\,\right)$ is a point on the curve.
+
+\begin{theorem} \label{Th_2x6}
+Let $\beta \in \mathbb{Q}\, \textbackslash \, \{\pm3\}$. Define
+$$r = \frac{18\, (\beta^2 - 9)^2}{(4\, \beta^2 - 45)\, (5\,\beta^2 - 36)},\quad
+A = -\frac{3\,r^2 - 12\,r + 8}{4},\quad B = -(r-1)^3.$$
+For any prime $p > 3$ the order of $y^2 = x^3 + A\, x^2 + B\, x$
+over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 12 and $\left(\,1 - 9/8\,r,\,
+\beta\, (\beta^2 + 9)\, r^2 / (32\, (\beta^2 - 9)^2)\,\right)$
+is a point of order greater than 12.
+\end{theorem}
+
+
 \subsection{Torsion group $\mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/10\mathbb{Z}$ over $\mathbb{Q}(\sqrt{-2})$}
 
 Let $P = (0, 0)$ be a point of order 10 on the Tate normal form. We must have $6\,P = -4\,P$,
@@ -392,7 +427,7 @@ over $\mathbb{Q}$ and all of them generate a singular curve.
 Over quadratic fields, we find the trivial solution $(-2, \sqrt{-2})$. It is a point of
 infinite order over $\mathbb{Q}(\sqrt{-2})$.
 
-\begin{theorem}
+\begin{theorem} \label{Th_2x10}
 Let $p$ be a prime such that $p \equiv 1, 3 \pmod{8}$ and $(t, u)$ be a multiple
 of $(-2, \sqrt{-2})$ on the curve $u^2 = t^3 + t^2 - t$ over $\mathbb{Z}/p\mathbb{Z}$.
 Define
@@ -402,8 +437,6 @@ The order of $y^2 = x^3 + A\,x^2 + B\,x$ over $\mathbb{Z}/p\mathbb{Z}$ is divisi
 \end{theorem}
 Note that for any divisor of $F_{12}$ we have $\sqrt{i} \equiv 2^{2^{10}} \pmod{p}$ and
 $\sqrt{-2} = \sqrt{i} + \sqrt{i}^3$.
-The rank of the elliptic curve still has to be calculated and if it is different from 0
-a point of infinite order must be found.
 
 \chapter{Elliptic Curve Method}
 
@@ -613,7 +646,7 @@ $$\frac{P(B_2, B_1)}{K\cdot B_1 + B_2 / \log B_2}.$$
 	\caption{\label{fig:B12_dgt} Optimal $B_2, B_1$ and number of curves as a function of the number of digits.}
 \end{figure}
 
-\subsection{Smoothness of the number of points of elliptic curves over $\mathbb{Z}/p\mathbb{Z}$}
+\subsection{Smoothness of the number of points of elliptic curves over $\mathbb{Z}/p\mathbb{Z}$} \label{chap:smoothness}
 
 All families of elliptic curves are not equivalent for ECM. The \textit{quality} depends on the
 proportion of primes for which $\#E$ is $B$-smooth.
@@ -658,8 +691,8 @@ Q_q(n) &= \lim_{N \to \infty} \frac{1}{N} \sum_{i = 1}^N \Prob(\val_q(\mathcal{E
  |\text{ } p_i \equiv 1\, (\text{mod}\,2q)).
 \end{align*}
 We have $P_2(0) = Q_2(0) = 1/3$, $P_2(1) = Q_2(1) = 1/4$, $P_2(2) = 1/6$, $Q_2(2) = 5/24$ and
-if $n \geq 3$ then $P_2(n) = 1/2^n$ and $Q_2(n) = (2^{n-1} - 1) / 2^{2n - 1}$. For $q \geq 3$
-we have $P_q(0) = (q - 2)/(q - 1)$, $Q_q(0) = (1 - q) / (q^2 - 1)$ and if $n \geq 1$ then
+if $n \geq 3$ then $P_2(n) = 1/2^n$ and $Q_2(n) = (2^n - 2) / 4^n$. For $q \geq 3$
+we have $P_q(0) = 1 - 1/(q - 1)$, $Q_q(0) = 1 - q/(q^2 - 1)$ and if $n \geq 1$ then
 $P_q(n) = 1/q^n$ and $Q_q(n) = (q^n - 1)/q^{2n}$.
 
 If $p \not\equiv 1 \pmod{4}$ then $\overline{\val_2}(\mathcal{E}_j(p)) = 1/4 + 1/3
@@ -676,13 +709,47 @@ We define
 $$\overline{\val_q}(\mathcal{E})
  = \lim_{N \to \infty} \frac{1}{N} \sum_{i = 1}^N \overline{\val_q}(\mathcal{E}(p_i)).$$
 If $R_q(n) = \lim_{N \to \infty} \frac{1}{N} \sum_{i = 1}^N \Prob(\val_q(\mathcal{E}_j(p_i)) = n)$,
-we have $R_q(n) = \frac{(q - 1)\,q^n - 1}{(q - 1)\,q^{2n}}$.
+for $n \geq 1$, we have $R_q(n) = \frac{(q - 1)\,q^n - 1}{(q - 1)\,q^{2n}}$.
 Then $\overline{\val_q}(\mathcal{E}_j) = \sum_{n \geq 1} n\, R_q(n) =
-\frac{q\, (q^3 + q^2 - 2\,q - 1)}{(q - 1)\,(q^2 - 1)^2}$.
+\frac{q\, (q^3 + q^2 - 2\,q - 1)}{(q - 1)\,(q^2 - 1)^2}$.\\The first values are
+$\overline{\val_2}(\mathcal{E}_j) = 14/9$, $\overline{\val_3}(\mathcal{E}_j) = 87/128$
+and $\overline{\val_5}(\mathcal{E}_j) = 695/2304$.
 
 The cardinality of an elliptic curve has more chances of being smooth than a random integer
 of the same size: $f(\mathcal{E}_j) =
- \prod_{q\text{ prime}} q^{1/(q - 1)\, -\, \overline{\val_q}(\mathcal{E}_j)} \approx 0.44397024$.
+ \prod_{q\text{ prime}} q^{1/(q - 1)\, -\, \overline{\val_q}(\mathcal{E}_j)} \approx 0.44397$.
+
+Note that $f(\mathcal{E}_j \text{ }|\text{ } p \equiv 1 \pmod{4}) = 2^{1/36}\cdot f(\mathcal{E}_j)
+\approx 0.45260$.
+
+We can compute $f(\mathcal{E}_d)$ for the Edwards curves $\mathcal{E}_d: x^2 + y^2 = 1 + d\,x^2y^2$.
+We have $P_2(1) = Q_2(1) = 0$, $P_2(2) = Q_2(2) = 1/4$ and if $n \geq 3$ then $P_2(n) = 3/2^n$
+and $Q_2(n) = (5\cdot 2^n - 24)/4^n$. Then $R_2(1) = 0$, $R_2(2) = 1/4$ and if $n \geq 3$ then
+$R_2(n) = (2^n - 3)/4^{n-1}$ and $\overline{\val_2}(\mathcal{E}_d) = 11/3$. Since
+$\overline{\val_2}(\mathcal{E}_j) = 14/9$ and for $q \geq 3$, $\overline{\val_q}(\mathcal{E}_d)
+= \overline{\val_q}(\mathcal{E}_j)$ we have $f(\mathcal{E}_d) = 2^{14/9 - 11/3}\cdot f(\mathcal{E}_j)
+\approx 0.102765$.
+
+Let $\mathcal{E}_{4\times4}$ be the Edwards curves defined by Theorem \ref{Th_4x4}.
+If $n < 4$ then $Q_2(n) = 0$ else $Q_2(n) = 3\,(2^n - 8)/4^{n-1}$. We have
+$\overline{\val_2}(\mathcal{E}_{4\times4}) = 16/3$. Then $f(\mathcal{E}_{4\times4})
+= 2^{14/9 - 16/3}\cdot f(\mathcal{E}_j) \approx 0.032369$.
+
+Let $\mathcal{E}_{2\times8}$ be the Edwards curves defined by Theorem \ref{Th_2x8}.
+If $n < 4$ then $R_2(n) = 0$ else $R_2(n) = 3\,(2^n - 8)/4^{n-1}$. We also have
+$\overline{\val_2}(\mathcal{E}_{2\times8}) = 16/3$ and
+$f(\mathcal{E}_{2\times8}) = f(\mathcal{E}_{4\times4})$.
+
+Let $\mathcal{E}_{2\times10}$ be the curves defined by Theorem \ref{Th_2x10} and
+$S_q(n) = \lim_{N \to \infty} \frac{1}{N} \sum_{i = 1}^N
+\Prob(\val_q(\mathcal{E}_{2\times10}(p_i)) = n, |\text{ } p_i \equiv 1\, (\text{mod}\,8))$.
+We have $S_2(0) = S_2(1) = 0$, $S_2(2) = 1/2$, $S_2(3) = 3/16$, $S_2(4) = 5/32$ and
+for $n \geq 5$, $S_2(n) = 3\,(2^n - 8)/4^n$ then
+$\overline{\val_2}(\mathcal{E}_{2\times10}) = 151/48$. $S_5(1) = 73/96$ and for $n \geq 2$,
+$S_5(n) = (4\cdot 5^{n-1} - 1)/(4\cdot 25^{n-1})$ then
+$\overline{\val_5}(\mathcal{E}_{2\times10}) = 2999/2304$.
+Finally $f(\mathcal{E}_{2\times10})
+= 2^{14/9 - 151/48}\cdot 5^{695/2304 - 2999/2304}\cdot f(\mathcal{E}_j) \approx 0.029489$.
 
 \subsection{ECM and $F_{12}$}
 
@@ -691,11 +758,24 @@ $$F_{12} = P_6 \:\cdot\: P_8 \:\cdot\: P_8 \:\cdot\: P_{12} \:\cdot\: P_{16} \:\
 \:\cdot\: C_{1133}.$$
 The size of the next prime factor is unknown and we can't set $B_1$ and $B_2$ as a function
 of its number of digits. The number of curves needed to find a new factor is unknown but it
-is a variable that will increase over time. We can set the searched prime factor as a function
-of the index of the curve.
+is a variable that will increase over time. We can set the size of the searched prime factor
+as a function of the index of the curve.
 
-The number of digits, $B_1$ and $B_2$ can be computed as a function of number of curves
-with \autoref{chap:ratio_B2_B1}. But now we don't check $n$ curves with a fixed set of
+The number of digits, $B_1$ and $B_2$ can be computed as a function of the number of curves
+with \autoref{chap:ratio_B2_B1}. However the value of $p$ must be replaced by
+$n = f(\mathcal{E} \text{ }|\text{ } p \equiv 1 \pmod{2^{14}})\,p$. The results of
+\autoref{chap:smoothness} are slightly modified by the condition $p \equiv 1 \pmod{2^{14}}$.
+
+If $h_T = f(\mathcal{E}_T \text{ }|\text{ } p \equiv 1 \pmod{2^{14}})\, / f(\mathcal{E}_j)$, we have
+\begin{alignat*}{7}
+&h_j           \quad &=& \quad 2^{14/9 - 55/36}  \quad &=& \quad 2^{1/36}    \quad &\approx& \quad 1.01944,\\
+&h_d           \quad &=& \quad 2^{14/9 - 91/24}  \quad &=& \quad 2^{-161/72} \quad &\approx& \quad 0.21226,\\
+&h_{4\times4}  \quad &=& \quad 2^{14/9 - 31/6}   \quad &=& \quad 2^{-65/18}  \quad &\approx& \quad 0.08184,\\
+&h_{2\times8}  \quad &=& \quad 2^{14/9 - 139/24} \quad &=& \quad 2^{-385/72} \quad &\approx& \quad 0.02457,\\
+&h_{2\times10} \quad &=& \quad 2^{14/9 - 151/48}\cdot 5^{695/2304 - 2999/2304} \quad &=& \quad 2^{-229/144}\cdot 5^{-1} \quad &\approx& \quad 0.06642.
+\end{alignat*}
+
+ Now we don't check $n$ curves with a fixed set of
 parameters but the $i^\text{th}$ curve is tested with different settings
 $B_1(i)$ and $B_2(i)$.
 
