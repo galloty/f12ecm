@@ -395,6 +395,7 @@ over $\mathbb{Z}/p\mathbb{Z}$ is divisible by 12 and $\left(\,1 - 9/8\,r,\,
 is a point of order greater than 12.
 \end{theorem}
 
+\subsection{Barbulescu family of Suyama-11 curves}
 
 \subsection{Torsion group $\mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/10\mathbb{Z}$ over $\mathbb{Q}(\sqrt{-2})$}
 
@@ -740,6 +741,13 @@ If $n < 4$ then $R_2(n) = 0$ else $R_2(n) = 3\,(2^n - 8)/4^{n-1}$. We also have
 $\overline{\val_2}(\mathcal{E}_{2\times8}) = 16/3$ and
 $f(\mathcal{E}_{2\times8}) = f(\mathcal{E}_{4\times4})$.
 
+Let $\mathcal{E}_{2\times6}$ be the Edwards curves defined by Theorem \ref{Th_2x6}.
+If $n < 2$ then $R_2(n) = 0$ else $R_2(n) = 3\,(2^n - 2)/4^n$ then
+$\overline{\val_2}(\mathcal{E}_{2\times6}) = 10/3$. $R_3(0) = 0$ and for $n > 0$
+we have $R_3(n) = (3^{n+1} - 4) / 9^n$ and then $\overline{\val_3}(\mathcal{E}_{2\times6}) = 27/16$.
+Finally $f(\mathcal{E}_{2\times6})
+= 2^{14/9 - 10/3}\cdot 3^{87/128 - 27/16}\cdot f(\mathcal{E}_j) \approx 0.042790$.
+
 Let $\mathcal{E}_{2\times10}$ be the curves defined by Theorem \ref{Th_2x10} and
 $S_q(n) = \lim_{N \to \infty} \frac{1}{N} \sum_{i = 1}^N
 \Prob(\val_q(\mathcal{E}_{2\times10}(p_i)) = n, |\text{ } p_i \equiv 1\, (\text{mod}\,8))$.
@@ -750,6 +758,17 @@ $S_5(n) = (4\cdot 5^{n-1} - 1)/(4\cdot 25^{n-1})$ then
 $\overline{\val_5}(\mathcal{E}_{2\times10}) = 2999/2304$.
 Finally $f(\mathcal{E}_{2\times10})
 = 2^{14/9 - 151/48}\cdot 5^{695/2304 - 2999/2304}\cdot f(\mathcal{E}_j) \approx 0.029489$.
+
+In summary, if $g_T = f(\mathcal{E}_T)\, / f(\mathcal{E}_j)$, we have
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline 
+\B\T $g_j$ & $g_d$ & $g_{4\times4}$ & $g_{2\times8}$ & $g_{2\times6}$ & $g_{2\times10}$ \\ 
+\hline 
+\B\T 1 & 0.231469 & 0.072908 & 0.072908 & 0.096380 & 0.066422 \\ 
+\hline 
+\end{tabular} 
+\end{center}
 
 \subsection{ECM and $F_{12}$}
 
@@ -767,17 +786,45 @@ $n = f(\mathcal{E} \text{ }|\text{ } p \equiv 1 \pmod{2^{14}})\,p$. The results 
 \autoref{chap:smoothness} are slightly modified by the condition $p \equiv 1 \pmod{2^{14}}$.
 
 If $h_T = f(\mathcal{E}_T \text{ }|\text{ } p \equiv 1 \pmod{2^{14}})\, / f(\mathcal{E}_j)$, we have
-\begin{alignat*}{7}
-&h_j           \quad &=& \quad 2^{14/9 - 55/36}  \quad &=& \quad 2^{1/36}    \quad &\approx& \quad 1.01944,\\
-&h_d           \quad &=& \quad 2^{14/9 - 91/24}  \quad &=& \quad 2^{-161/72} \quad &\approx& \quad 0.21226,\\
-&h_{4\times4}  \quad &=& \quad 2^{14/9 - 31/6}   \quad &=& \quad 2^{-65/18}  \quad &\approx& \quad 0.08184,\\
-&h_{2\times8}  \quad &=& \quad 2^{14/9 - 139/24} \quad &=& \quad 2^{-385/72} \quad &\approx& \quad 0.02457,\\
-&h_{2\times10} \quad &=& \quad 2^{14/9 - 151/48}\cdot 5^{695/2304 - 2999/2304} \quad &=& \quad 2^{-229/144}\cdot 5^{-1} \quad &\approx& \quad 0.06642.
+\begin{alignat*}{5}
+&h_j           \quad &=& \quad 2^{14/9 - 55/36}  \quad &=& \quad 2^{1/36},\\
+&h_d           \quad &=& \quad 2^{14/9 - 91/24}  \quad &=& \quad 2^{-161/72},\\
+&h_{4\times4}  \quad &=& \quad 2^{14/9 - 31/6}   \quad &=& \quad 2^{-65/18},\\
+&h_{2\times8}  \quad &=& \quad 2^{14/9 - 139/24} \quad &=& \quad 2^{-305/72},\\
+&h_{2\times6}  \quad &=& \quad 2^{14/9 - 22/7}\cdot 3^{87/128 - 27/16} \quad &=& \quad 2^{-100/63}\cdot 3^{-129/128},\\
+&h_{2\times10} \quad &=& \quad 2^{14/9 - 151/48}\cdot 5^{695/2304 - 2999/2304} \quad &=& \quad 2^{-229/144}\cdot 5^{-1}.
 \end{alignat*}
+In summary,
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline 
+\B\T $h_j$ & $h_d$ & $h_{4\times4}$ & $h_{2\times8}$ & $h_{2\times6}$ & $h_{2\times10}$ \\ 
+\hline 
+\B\T 1.019441 & 0.212258 & 0.081837 & 0.053064 & 0.109983 & 0.066422 \\ 
+\hline 
+\end{tabular} 
+\end{center}
+It is interesting to calculate the ratio $h_T / g_T$:
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline 
+\B\T $h_j / g_j$ & $h_d / g_d$ & $h_{4\times4} / g_{4\times4}$ & $h_{2\times8} / g_{2\times8}$ & $h_{2\times6} / g_{2\times6}$ & $h_{2\times10} / g_{2\times10}$ \\ 
+\hline 
+\B\T 1.019441 & 0.917004 & 1.122462 & 0.727827 & 1.141140 & 1 \\ 
+\hline 
+\end{tabular} 
+\end{center}
+$\mathcal{E}_{4\times4}$ and $\mathcal{E}_{2\times8}$ are equivalent if the factors of $p$
+are unknown but if $p$ is a factor $F_{12}$ is then $\mathcal{E}_{2\times8}$ is clearly
+more efficient.
 
- Now we don't check $n$ curves with a fixed set of
-parameters but the $i^\text{th}$ curve is tested with different settings
-$B_1(i)$ and $B_2(i)$.
+
+
+
+
+
+Now we don't check $n$ curves with a fixed set of parameters but the $i^\text{th}$ curve
+is tested with different settings $B_1(i)$ and $B_2(i)$.
 
 However \autoref{chap:ratio_B2_B1} can be the starting point. For integer values of $\log p$,
 $n(\lfloor\log p\rfloor)$ is calculated. If $n$ curves are tested for each value of
